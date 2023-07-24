@@ -38,8 +38,20 @@ class Patient:
     """
 
     """
-    def __init__(self):
-        pass
+
+    def __init__(self, identification, pre_operating_time, peri_operating_time, post_operating_time):
+        self.id = identification
+        self.block = False
+        self.service_condition = np.array([0, 0, 0])
+        self.pre_operating_time = pre_operating_time
+        self.peri_operating_time = peri_operating_time
+        self.post_operating_time = post_operating_time
+        self.start_pre_operating = 0
+        self.start_peri_operating = 0
+        self.start_post_operating = 0
+        self.end_pre_operating = self.start_pre_operating + self.pre_operating_time
+        self.end_peri_operating = self.start_peri_operating + self.peri_operating_time
+        self.end_post_operating = self.start_post_operating + self.post_operating_time
 
     def tmp(self):
         pass
@@ -49,8 +61,13 @@ class Resource:
     """
 
     """
-    def __init__(self):
-        pass
+
+    def __init__(self, identification, rate=1):
+        self.id = identification
+        self.status = 0
+        self.block = False
+        self.rate = rate
+        self.sequence = []
 
     def tmp(self):
         pass
