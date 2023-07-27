@@ -11,6 +11,10 @@ class OperatingRoomScheduling(gym.Env):
         self.number_of_stages = self.job_machine_matrix.shape[1]
         self.number_of_patients = self.job_machine_matrix.shape[0]
         self.stages_machines = stages_machines
+        self.machines_dict = dict()
+        self.patients_list = list()
+        self.future_event_list = list()
+        self.clock = 0
 
         """
         The following dictionary maps abstract actions from `self.action_space` to 
@@ -24,31 +28,56 @@ class OperatingRoomScheduling(gym.Env):
             3: np.array([0, -1]),
         }
 
+    def reset(self):
+        self.future_event_list = list()
+        self.clock = 0
+
+        # Instantiating patients
+        for patients in range(self.number_of_patients):
+            patient = Patient(patients + 1,
+                              self.job_machine_matrix[patients, 0],
+                              self.job_machine_matrix[patients, 1],
+                              self.job_machine_matrix[patients, 2])
+            self.patients_list.append(patient)
+
+        # Instantiating resources
+        for stages in range(self.number_of_stages):
+            self.machines_dict[stages + 1] = list()
+            for resources in range(self.stages_machines[stages]):
+                resource = Resource(resources)
+                self.machines_dict[stages].append(resource)
+
+    def fel_maker(self, patient_id, event_type):
+        if event_type == 'End of Pre-Operative':
+            column_indicator = 0
+        elif event_type == 'End of Peri-Operative':
+            column_indicator = 1
+        else:
+            column_indicator = 2
+        event_time = self.clock + self.job_machine_matrix[patient_id - 1, column_indicator]
+        self.future_event_list.append({
+            'Event Type': event_type,
+            'Event Time': event_time,
+            'Patient ID': patient_id
+        })
+
     def end_of_pre_operative(self):
-        pass
-    
+        # Forward look
+        for operating_room in self.machines_dict[2]:
+            if self.machines_dict[2][operating_room].status:
+                self.machines_dict[2][operating_room].status = False
+
+
+
     def end_of_peri_operative(self):
         pass
 
     def end_of_post_operative(self):
         pass
 
-    def reset(self):
-        patients_list = list()
-        for patients in range(self.number_of_patients):
-            patient = Patient(patients + 1,
-                              self.job_machine_matrix[patients, 0],
-                              self.job_machine_matrix[patients, 1],
-                              self.job_machine_matrix[patients, 2])
-            patients_list.append(patient)
-        machines_dict = dict()
-        for stages in range(self.number_of_stages):
-            machines_dict[stages] = list()
-            for resources in range(self.stages_machines[stages]):
-                resource = Resource(resources)
-                machines_dict[stages].append(resource)
-
     def step(self, action):
+        while :
+            pass
         pass
 
 
@@ -82,7 +111,7 @@ class Resource:
 
     def __init__(self, identification, rate=1):
         self.id = identification
-        self.status = 0
+        self.status = True
         self.block = False
         self.rate = rate
         self.sequence = list()
