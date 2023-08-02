@@ -20,7 +20,7 @@ class OperatingRoomScheduling(gym.Env):
             self.stages_machines['Stage ' + str(stage + 1)] = stages_machines[stage]
         # A dict to know a list of idle resources and waiting patients for each stage
         # to check whether necessary to take action
-        # key: stage, value: dict --> key: idle resource, waiting patient  value: idle resources (list), waiting patients (list)
+        # key: stage, value: dict --> key: idle resources, waiting patients  value: idle resources (list), waiting patients (list)
         self.take_action_info = dict()
         # A dict with keys corresponding to stages and values (as type nparray) corresponding to
         # waiting patients behind each stage
@@ -59,10 +59,6 @@ class OperatingRoomScheduling(gym.Env):
             if stage == 0:
                 self.take_action_info['Stage ' + str(stage + 1)]['Waiting Patients'].extend(self.jobs.tolist())
 
-
-
-
-
         # Instantiating patients
         for patients in range(self.number_of_patients):
             patient = Patient(
@@ -99,7 +95,6 @@ class OperatingRoomScheduling(gym.Env):
             'Patient ID': patient_id
         })
 
-
     def update_take_action_info(self):
         for stage in list(self.machines_dict.keys()):
             # Find idle resources in each stage
@@ -112,7 +107,6 @@ class OperatingRoomScheduling(gym.Env):
     def end_of_pre_operative(self):
         pass
 
-
     def end_of_peri_operative(self):
         pass
 
@@ -120,8 +114,12 @@ class OperatingRoomScheduling(gym.Env):
         pass
 
     def step(self, action):
-        while :
-            pass
+        self.update_take_action_info()
+        while True:
+            for stage in list(self.take_action_info.keys()):
+                if len(self.take_action_info[stage]['Idle Resources']) != 0 and \
+                        len(self.take_action_info[stage]['Waiting Patients']) != 0:
+                    break
         pass
 
 
@@ -164,6 +162,3 @@ class Resource:
 
     def tmp(self):
         pass
-
-
-
