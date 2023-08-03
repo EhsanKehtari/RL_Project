@@ -23,9 +23,6 @@ class OperatingRoomScheduling(gym.Env):
         # to check whether necessary to take action
         # key: stage, value: dict --> key: idle resources, waiting patients  value: idle resources (list), waiting patients (list)
         self.take_action_info = dict()
-        # A dict with keys corresponding to stages and values (as type nparray) corresponding to
-        # waiting patients behind each stage
-        self.waiting_patients_behind_stages = dict()
         self.machines_dict = dict()
         # A list to store instances of class Patient
         self.patients_list = list()
@@ -37,20 +34,7 @@ class OperatingRoomScheduling(gym.Env):
     def reset(self):
         self.future_event_list = list()
         self.clock = 0
-        # Initialize take_action_info
-        for stage in range(self.number_of_stages):
-            self.take_action_info['Stage ' + str(stage + 1)] = dict()
-            self.take_action_info['Stage ' + str(stage + 1)]['Idle Resources'] = list()
-            self.take_action_info['Stage ' + str(stage + 1)]['Waiting Patients'] = list()
-            # In the beginning, all resources in all stages are idle
-            self.take_action_info['Stage ' + str(stage + 1)]['Idle Resources'].extend(
-                [resource for resource in range(1, self.stages_machines['Stage ' + str(stage + 1)])]
-            )
-            # In the beginning, only stage 1 has waiting patients
-            if stage == 0:
-                self.take_action_info['Stage ' + str(stage + 1)]['Waiting Patients'].extend(self.jobs.tolist())
-
-        # Instantiating patients
+        # Instantiate patients
         for patients in range(self.number_of_patients):
             patient = Patient(
                 self.jobs[patients],
@@ -60,55 +44,95 @@ class OperatingRoomScheduling(gym.Env):
             )
             self.patients_list.append(patient)
 
-        # Instantiating resources
+        # Instantiate resources
         for stages in range(self.number_of_stages):
-            # In the beginning, all patients are waiting to enter pre-operative stage (i.e., stage 1)
-            if stages == 0:
-                self.waiting_patients_behind_stages['Stage 1'] = self.jobs
-            else:
-                self.waiting_patients_behind_stages['Stage ' + str(stages + 1)] = None
             self.machines_dict['Stage ' + str(stages + 1)] = list()
-            for resources in range(self.stages_machines[stages]):
+            for resources in range(self.stages_machines['Stage ' + str(stages + 1)]):
                 resource = Resource(identification=(stages + 1, resources + 1))
                 self.machines_dict['Stage ' + str(stages + 1)].append(resource)
 
-    def fel_maker(self, patient_id, event_type):
+        # Initialize take_action_info
+        for stage in range(self.number_of_stages):
+            self.take_action_info['Stage ' + str(stage + 1)] = dict()
+            self.take_action_info['Stage ' + str(stage + 1)]['Idle Resources'] = list()
+            self.take_action_info['Stage ' + str(stage + 1)]['Waiting Patients'] = list()
+            # In the beginning, all resources in all stages are idle
+            self.take_action_info['Stage ' + str(stage + 1)]['Idle Resources'].extend(
+                self.machines_dict['Stage ' + str(stage + 1)]
+            )
+            # In the beginning, all patients are waiting to enter pre-operative stage (i.e., stage 1)
+            if stage == 0:
+                self.take_action_info['Stage ' + str(stage + 1)]['Waiting Patients'].extend(
+                    self.patients_list
+                )
+
+    def fel_maker(self, patient, resource, event_type):
         if event_type == 'End of Pre-Operative':
-            column_indicator = 0
+            # Resource's service rate changes pre-defined pre-operating time
+            patient.pre_operating_time *= resource.rate
+            event_time = patient.end_pre_operating
         elif event_type == 'End of Peri-Operative':
-            column_indicator = 1
+            # Resource's service rate changes pre-defined peri-operating time
+            patient.peri_operating_time *= resource.rate
+            event_time = patient.end_peri_operating
         else:
-            column_indicator = 2
-        event_time = self.clock + self.job_machine_matrix[patient_id - 1, column_indicator]
+            # Resource's service rate changes pre-defined post-operating time
+            patient.post_operating_time *= resource.rate
+            event_time = patient.end_post_operating
         self.future_event_list.append({
             'Event Type': event_type,
             'Event Time': event_time,
-            'Patient ID': patient_id
+            'Patient': patient,
+            'Resource': resource
         })
 
-    def update_take_action_info(self):
-        for stage in list(self.machines_dict.keys()):
-            # Find idle resources in each stage
-            for resource in range(len(self.machines_dict[stage])):
-                if not self.machines_dict[stage][resource].working_status:
-                    self.take_action_info[stage]['Idle Resources'].append(self.machines_dict[stage][resource].id[1])
-            # Find waiting patients behind each stage
-            self.take_action_info[stage]['Waiting Patients'].extend(self.waiting_patients_behind_stages[stage])
+    def end_of_pre_operative(self, patient, resource):
+        # Modify patient's attributes
+        patient.block = True
+        patient.service_condition[0] = 1
+        # Move patient to next stage's waiting patients list
+        self.take_action_info['Stage 2']['Waiting Patients'].append(patient)
 
-    def end_of_pre_operative(self):
-        pass
+        # Modify resource's attribute
+        resource.working_status = False
+        resource.block = True
+        resource.job_under_process = None
+        resource.done_jobs_sequence.append(patient)
+        # Move resource to idle resources list
+        self.take_action_info['Stage 1']['Idle Resources'].append(resource)
 
-    def end_of_peri_operative(self):
-        pass
+    def end_of_peri_operative(self, patient, resource):
+        # Modify patient's attributes
+        patient.block = True
+        patient.service_condition[1] = 1
+        # Move patient to next stage's waiting patients list
+        self.take_action_info['Stage 3']['Waiting Patients'].append(patient)
 
-    def end_of_post_operative(self):
-        pass
+        # Modify resource's attribute
+        resource.working_status = False
+        resource.block = True
+        resource.job_under_process = None
+        resource.done_jobs_sequence.append(patient)
+        # Move resource to idle resources list
+        self.take_action_info['Stage 2']['Idle Resources'].append(resource)
+
+    def end_of_post_operative(self, patient, resource):
+        # Modify patient's attributes
+        patient.block = False
+        patient.service_condition[2] = 1
+
+        # Modify resource's attribute
+        resource.working_status = False
+        resource.block = False
+        resource.job_under_process = None
+        resource.done_jobs_sequence.append(patient)
+        # Move resource to idle resources list
+        self.take_action_info['Stage 3']['Idle Resources'].append(resource)
 
     def action_to_heuristics(self, action):
         pass
 
     def step(self, action):
-        self.update_take_action_info()
         problem_terminated = False
         step_terminated = False
         while not step_terminated:
@@ -129,17 +153,31 @@ class OperatingRoomScheduling(gym.Env):
                 sorted_fel = sorted(self.future_event_list, key=lambda x: x['Event Time'])
                 # Find imminent event
                 current_event = sorted_fel[0]
+                # Restore current event's info from current_event dict
+                self.clock = current_event['Event Time']
+                current_event_type = current_event['Event Type']
+                current_event_patient = current_event['Patient']
+                current_event_resource = current_event['Resource']
                 # Execute events
-                if current_event['Event Type'] == 'End of Pre-Operative':
-                    self.end_of_pre_operative()
-                elif current_event['Event Type'] == 'End of Peri-Operative':
-                    self.end_of_peri_operative()
-                elif current_event['Event Type'] == 'End of Post-Operative':
-                    self.end_of_post_operative()
+                if current_event_type == 'End of Pre-Operative':
+                    self.end_of_pre_operative(
+                        current_event_patient,
+                        current_event_resource
+                    )
+                elif current_event_type == 'End of Peri-Operative':
+                    self.end_of_peri_operative(
+                        current_event_patient,
+                        current_event_resource
+                    )
+                elif current_event_type == 'End of Post-Operative':
+                    self.end_of_post_operative(
+                        current_event_patient,
+                        current_event_resource
+                    )
                 # Remove current event from fel
                 self.future_event_list.remove(current_event)
 
-        return observation, reward, problem_terminated, False, self.info
+        return observation, reward, problem_terminated, False, None
 
 
 class Patient:
@@ -151,6 +189,10 @@ class Patient:
         self.id = identification
         self.block = False
         self.service_condition = np.array([0, 0, 0])
+        self.dismissed = False
+        if self.service_condition[2] == 1:
+            self.dismissed = True
+        self.current_stage = 0
         self.pre_operating_time = pre_operating_time
         self.peri_operating_time = peri_operating_time
         self.post_operating_time = post_operating_time
