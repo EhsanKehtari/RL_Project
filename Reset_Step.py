@@ -4,6 +4,7 @@ import gym
 from gym import spaces
 import numpy as np
 from numpy import ndarray
+from Heuristics_OOP import Flowshop
 
 
 class OperatingRoomScheduling(gym.Env):
@@ -28,20 +29,10 @@ class OperatingRoomScheduling(gym.Env):
         self.machines_dict = dict()
         # A list to store instances of class Patient
         self.patients_list = list()
+        # A dict to store additional information
+        self.info = dict()
         self.future_event_list = list()
         self.clock = 0
-
-        """
-        The following dictionary maps abstract actions from `self.action_space` to 
-        the direction we will walk in if that action is taken.
-        I.e. 0 corresponds to "right", 1 to "up" etc.
-        """
-        self._action_to_direction = {
-            0: np.array([1, 0]),
-            1: np.array([0, 1]),
-            2: np.array([-1, 0]),
-            3: np.array([0, -1]),
-        }
 
     def reset(self):
         self.future_event_list = list()
@@ -114,16 +105,41 @@ class OperatingRoomScheduling(gym.Env):
         pass
 
     def action_to_heuristics(self, action):
-
+        pass
 
     def step(self, action):
         self.update_take_action_info()
-        while True:
+        problem_terminated = False
+        step_terminated = False
+        while not step_terminated:
             for stage in list(self.take_action_info.keys()):
+                # Step termination condition
                 if len(self.take_action_info[stage]['Idle Resources']) != 0 and \
                         len(self.take_action_info[stage]['Waiting Patients']) != 0:
+                    self.info['Next Step Stage'] = stage
+                    step_terminated = True
                     break
-        pass
+            if step_terminated:
+                break
+            elif len(self.future_event_list) == 0:
+                problem_terminated = True
+                break
+            else:
+                # Sort fel based on event times
+                sorted_fel = sorted(self.future_event_list, key=lambda x: x['Event Time'])
+                # Find imminent event
+                current_event = sorted_fel[0]
+                # Execute events
+                if current_event['Event Type'] == 'End of Pre-Operative':
+                    self.end_of_pre_operative()
+                elif current_event['Event Type'] == 'End of Peri-Operative':
+                    self.end_of_peri_operative()
+                elif current_event['Event Type'] == 'End of Post-Operative':
+                    self.end_of_post_operative()
+                # Remove current event from fel
+                self.future_event_list.remove(current_event)
+
+        return observation, reward, problem_terminated, False, self.info
 
 
 class Patient:
