@@ -115,7 +115,7 @@ class Flowshop:
         sequence = np.concatenate([left_sequence, right_sequence])
         jobs_sequence = self.jobs[sequence]
         c_max = Flowshop_helper.c_max_calculator(sequence, self.job_machine_matrix[list(sequence), :])
-        return jobs_sequence, c_max
+        return jobs_sequence
 
     def cds(self) -> Tuple[ndarray, None]:
         """
@@ -138,7 +138,7 @@ class Flowshop:
 
             johnson_job_machine_matrix[:, 0], johnson_job_machine_matrix[:, 1] = machine1, machine2
             cds_johnson_instance = Flowshop(johnson_job_machine_matrix, np.arange(0, job_number))
-            current_sequence, _ = cds_johnson_instance.johnson()
+            current_sequence = cds_johnson_instance.johnson()
             process_time_machine1 = johnson_job_machine_matrix[:, 0][current_sequence]
 
             current_schedule, _ = Flowshop_helper().next_machine_scheduler(np.zeros_like(current_sequence, dtype=float),
@@ -152,7 +152,7 @@ class Flowshop:
                 best_sequence = current_sequence
 
         jobs_best_sequence = self.jobs[best_sequence]
-        return jobs_best_sequence, best_c_max
+        return jobs_best_sequence
 
     def neh(self) -> Tuple[ndarray, None]:
         """
@@ -184,7 +184,7 @@ class Flowshop:
             sequence = best_sequence
 
         jobs_best_sequence = self.jobs[best_sequence]
-        return jobs_best_sequence, best_c_max
+        return jobs_best_sequence
 
     def mst(self) -> ndarray:
         """

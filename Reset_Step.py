@@ -113,6 +113,9 @@ class OperatingRoomScheduling(gym.Env):
     def end_of_post_operative(self):
         pass
 
+    def action_to_heuristics(self, action):
+
+
     def step(self, action):
         self.update_take_action_info()
         while True:
