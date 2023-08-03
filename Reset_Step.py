@@ -66,26 +66,6 @@ class OperatingRoomScheduling(gym.Env):
                     self.patients_list
                 )
 
-    def fel_maker(self, patient, resource, event_type):
-        if event_type == 'End of Pre-Operative':
-            # Resource's service rate changes pre-defined pre-operating time
-            patient.pre_operating_time *= resource.rate
-            event_time = patient.end_pre_operating
-        elif event_type == 'End of Peri-Operative':
-            # Resource's service rate changes pre-defined peri-operating time
-            patient.peri_operating_time *= resource.rate
-            event_time = patient.end_peri_operating
-        else:
-            # Resource's service rate changes pre-defined post-operating time
-            patient.post_operating_time *= resource.rate
-            event_time = patient.end_post_operating
-        self.future_event_list.append({
-            'Event Type': event_type,
-            'Event Time': event_time,
-            'Patient': patient,
-            'Resource': resource
-        })
-
     def end_of_pre_operative(self, patient, resource):
         # Modify patient's attributes
         patient.block = True
@@ -130,9 +110,71 @@ class OperatingRoomScheduling(gym.Env):
         self.take_action_info['Stage 3']['Idle Resources'].append(resource)
 
     def action_to_heuristics(self, action):
-        pass
+        patient = None
+        resource = None
+        return patient, resource
+
+    def schedule_patient(self, patient, resource, current_clock):
+        # Modify patient's attributes
+        patient.block = False
+        patient.current_stage = resource.id[0]
+        if patient.current_stage == 1:
+            patient.start_pre_operating = current_clock
+        elif patient.current_stage == 2:
+            patient.start_peri_operating = current_clock
+        else:
+            patient.start_post_operating = current_clock
+        # Remove patient from current stage's waiting patients list
+        self.take_action_info['Stage ' + str(patient.current_stage)]['Waiting Patients'].remove(patient)
+
+        # Modify resource's attributes
+        resource.working_status = True
+        resource.block = False
+        resource.job_under_process = patient
+        # Remove resource from current stage's idle resources list
+        self.take_action_info['Stage ' + str(resource.id[0])]['Idle Resources'].remove(resource)
+
+        # Determine event type based on stage number
+        if resource.id[0] == 1:
+            event_type = 'End of Pre-Operative'
+        elif resource.id[0] == 2:
+            event_type = 'End of Peri-Operative'
+        else:
+            event_type = 'End of Post-Operative'
+
+        # Schedule patient on resource
+        self.fel_maker(
+            patient,
+            resource,
+            event_type
+        )
+
+    def fel_maker(self, patient, resource, event_type):
+        if event_type == 'End of Pre-Operative':
+            # Resource's service rate changes pre-defined pre-operating time
+            patient.pre_operating_time *= resource.rate
+            event_time = patient.end_pre_operating
+        elif event_type == 'End of Peri-Operative':
+            # Resource's service rate changes pre-defined peri-operating time
+            patient.peri_operating_time *= resource.rate
+            event_time = patient.end_peri_operating
+        else:
+            # Resource's service rate changes pre-defined post-operating time
+            patient.post_operating_time *= resource.rate
+            event_time = patient.end_post_operating
+        self.future_event_list.append({
+            'Event Type': event_type,
+            'Event Time': event_time,
+            'Patient': patient,
+            'Resource': resource
+        })
 
     def step(self, action):
+        # Interpret action and find a patient to be scheduled on a resource
+        patient, resource = self.action_to_heuristics(action)
+        # Schedule patient on the specified resource
+        self.schedule_patient(patient, resource, self.clock)
+        # Specify initial termination terms for problem and step
         problem_terminated = False
         step_terminated = False
         while not step_terminated:
