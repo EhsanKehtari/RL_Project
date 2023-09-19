@@ -131,27 +131,32 @@ class Flowshop:
 
         johnson_job_machine_matrix = np.zeros((job_number, 2))
 
-        for k in range(1, machine_number):
+        if machine_number != 1:
+            for k in range(1, machine_number):
 
-            machine1 = self.job_machine_matrix[:, 0:k].sum(axis=1)
-            machine2 = self.job_machine_matrix[:, machine_number - k:].sum(axis=1)
+                machine1 = self.job_machine_matrix[:, 0:k].sum(axis=1)
+                machine2 = self.job_machine_matrix[:, machine_number - k:].sum(axis=1)
 
-            johnson_job_machine_matrix[:, 0], johnson_job_machine_matrix[:, 1] = machine1, machine2
-            cds_johnson_instance = Flowshop(johnson_job_machine_matrix, np.arange(0, job_number))
-            current_sequence = cds_johnson_instance.johnson()
-            process_time_machine1 = johnson_job_machine_matrix[:, 0][current_sequence]
+                johnson_job_machine_matrix[:, 0], johnson_job_machine_matrix[:, 1] = machine1, machine2
+                cds_johnson_instance = Flowshop(johnson_job_machine_matrix, np.arange(0, job_number))
+                current_sequence = cds_johnson_instance.johnson()
+                process_time_machine1 = johnson_job_machine_matrix[:, 0][current_sequence]
 
-            current_schedule, _ = Flowshop_helper().next_machine_scheduler(np.zeros_like(current_sequence, dtype=float),
-                                                                    process_time_machine1)
-            process_time_machine2 = johnson_job_machine_matrix[:, 1][current_sequence]
+                current_schedule, _ = Flowshop_helper().next_machine_scheduler(np.zeros_like(current_sequence, dtype=float),
+                                                                        process_time_machine1)
+                process_time_machine2 = johnson_job_machine_matrix[:, 1][current_sequence]
 
-            _, current_c_max = Flowshop_helper().next_machine_scheduler(current_schedule, process_time_machine2)
+                _, current_c_max = Flowshop_helper().next_machine_scheduler(current_schedule, process_time_machine2)
 
-            if current_c_max < best_c_max:
-                best_c_max = current_c_max
-                best_sequence = current_sequence
+                if current_c_max < best_c_max:
+                    best_c_max = current_c_max
+                    best_sequence = current_sequence
+            jobs_best_sequence = self.jobs[best_sequence]
 
-        jobs_best_sequence = self.jobs[best_sequence]
+        else:
+            cds_johnson_instance = Flowshop(self.job_machine_matrix, self.jobs)
+            jobs_best_sequence = cds_johnson_instance.johnson()
+
         return jobs_best_sequence
 
     def neh(self) -> Tuple[ndarray, None]:
