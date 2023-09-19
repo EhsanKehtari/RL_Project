@@ -329,10 +329,6 @@ class OperatingRoomScheduling(gym.Env):
 
 
 class Patient:
-    """
-
-    """
-
     def __init__(self, identification, pre_operating_time, peri_operating_time, post_operating_time):
         self.id = identification
         self.block = False
@@ -356,10 +352,6 @@ class Patient:
 
 
 class Resource:
-    """
-
-    """
-
     def __init__(self, identification: Tuple, rate=1):
         # resource id is a tuple: (stage number, resource number)
         self.id = identification
