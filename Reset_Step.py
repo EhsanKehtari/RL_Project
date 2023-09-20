@@ -10,7 +10,7 @@ from Heuristics_OOP import Flowshop
 class OperatingRoomScheduling(gym.Env):
     def __init__(self, job_machine_matrix: ndarray, jobs: ndarray, stages_machines: list):
         self.observation_space = spaces.Box(low=0, high=np.infty, shape=(6,), dtype=np.float32)
-        self.action_space = spaces.Discrete(12)
+        self.action_space = spaces.Discrete(11)
         self.job_machine_matrix = job_machine_matrix
         self.jobs = jobs
         self.number_of_stages = self.job_machine_matrix.shape[1]
@@ -47,14 +47,12 @@ class OperatingRoomScheduling(gym.Env):
                 self.job_machine_matrix[patients, 2]
             )
             self.patients_list.append(patient)
-
         # Instantiate resources
         for stages in range(self.number_of_stages):
             self.machines_dict['Stage ' + str(stages + 1)] = list()
             for resources in range(self.stages_machines['Stage ' + str(stages + 1)]):
                 resource = Resource(identification=(stages + 1, resources + 1))
                 self.machines_dict['Stage ' + str(stages + 1)].append(resource)
-
         # Initialize take_action_info
         for stage in range(self.number_of_stages):
             self.take_action_info['Stage ' + str(stage + 1)] = dict()
@@ -76,7 +74,6 @@ class OperatingRoomScheduling(gym.Env):
         patient.service_condition[0] = 1
         # Move patient to next stage's waiting patients list
         self.take_action_info['Stage 2']['Waiting Patients'].append(patient)
-
         # Modify resource's attribute
         resource.working_status = False
         resource.block = True
@@ -91,7 +88,6 @@ class OperatingRoomScheduling(gym.Env):
         patient.service_condition[1] = 1
         # Move patient to next stage's waiting patients list
         self.take_action_info['Stage 3']['Waiting Patients'].append(patient)
-
         # Modify resource's attribute
         resource.working_status = False
         resource.block = True
@@ -104,7 +100,6 @@ class OperatingRoomScheduling(gym.Env):
         # Modify patient's attributes
         patient.block = False
         patient.service_condition[2] = 1
-
         # Modify resource's attribute
         resource.working_status = False
         resource.block = False
@@ -232,14 +227,12 @@ class OperatingRoomScheduling(gym.Env):
             patient.start_post_operating = current_clock
         # Remove patient from current stage's waiting patients list
         self.take_action_info['Stage ' + str(patient.current_stage)]['Waiting Patients'].remove(patient)
-
         # Modify resource's attributes
         resource.working_status = True
         resource.block = False
         resource.job_under_process = patient
         # Remove resource from current stage's idle resources list
         self.take_action_info['Stage ' + str(resource.id[0])]['Idle Resources'].remove(resource)
-
         # Determine event type based on stage number
         if resource.id[0] == 1:
             event_type = 'End of Pre-Operative'
@@ -247,7 +240,6 @@ class OperatingRoomScheduling(gym.Env):
             event_type = 'End of Peri-Operative'
         else:
             event_type = 'End of Post-Operative'
-
         # Schedule patient on resource
         self.fel_maker(
             patient,
@@ -324,7 +316,6 @@ class OperatingRoomScheduling(gym.Env):
                     )
                 # Remove current event from fel
                 self.future_event_list.remove(current_event)
-
         return observation, reward, problem_terminated, False, None
 
 
@@ -347,10 +338,6 @@ class Patient:
         self.end_peri_operating = self.start_peri_operating + self.peri_operating_time
         self.end_post_operating = self.start_post_operating + self.post_operating_time
 
-    def tmp(self):
-        pass
-
-
 class Resource:
     def __init__(self, identification: Tuple, rate=1):
         # resource id is a tuple: (stage number, resource number)
@@ -361,5 +348,3 @@ class Resource:
         self.job_under_process = None
         self.done_jobs_sequence = list()
 
-    def tmp(self):
-        pass
