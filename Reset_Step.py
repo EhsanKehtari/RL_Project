@@ -67,6 +67,8 @@ class OperatingRoomScheduling(gym.Env):
                 self.take_action_info['Stage ' + str(stage + 1)]['Waiting Patients'].extend(
                     self.patients_list
                 )
+        # Stage 1 is the next stage to be taken care of in the next step (i.e., step 1)
+        self.info['Next Step Stage'] = 'Stage 1'
 
     def end_of_pre_operative(self, patient, resource):
         # Modify patient's attributes
@@ -126,88 +128,124 @@ class OperatingRoomScheduling(gym.Env):
         # Map actions to heuristics and execute the chosen heuristic
         # CDS
         if action == 0:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            cds_job_machine_matrix = self.job_machine_matrix[job_idx][:, numeric_stage_under_study:]
-            cds_instance = Flowshop(cds_job_machine_matrix, np.array(waiting_patients_ids))
-            cds_result_sequence = cds_instance.cds()
-            patient_idx = cds_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                cds_job_machine_matrix = self.job_machine_matrix[job_idx][:, numeric_stage_under_study:]
+                cds_instance = Flowshop(cds_job_machine_matrix, np.array(waiting_patients_ids))
+                cds_result_sequence = cds_instance.cds()
+                patient_idx = cds_result_sequence[0]
         # NEH
         elif action == 1:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            neh_job_machine_matrix = self.job_machine_matrix[job_idx][:, numeric_stage_under_study:]
-            neh_instance = Flowshop(neh_job_machine_matrix, np.array(waiting_patients_ids))
-            neh_result_sequence = neh_instance.cds()
-            patient_idx = neh_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                neh_job_machine_matrix = self.job_machine_matrix[job_idx][:, numeric_stage_under_study:]
+                neh_instance = Flowshop(neh_job_machine_matrix, np.array(waiting_patients_ids))
+                neh_result_sequence = neh_instance.cds()
+                patient_idx = neh_result_sequence[0]
         # MST
         elif action == 2:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            mst_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
-            mst_instance = Flowshop(mst_job_machine_matrix, np.array(waiting_patients_ids))
-            mst_result_sequence = mst_instance.mst()
-            patient_idx = mst_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                mst_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
+                mst_instance = Flowshop(mst_job_machine_matrix, np.array(waiting_patients_ids))
+                mst_result_sequence = mst_instance.mst()
+                patient_idx = mst_result_sequence[0]
         # MOT
         elif action == 3:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            mot_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
-            mot_instance = Flowshop(mot_job_machine_matrix, np.array(waiting_patients_ids))
-            mot_result_sequence = mot_instance.mot()
-            patient_idx = mot_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                mot_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
+                mot_instance = Flowshop(mot_job_machine_matrix, np.array(waiting_patients_ids))
+                mot_result_sequence = mot_instance.mot()
+                patient_idx = mot_result_sequence[0]
         # SESPT_LESPT
         elif action == 4:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            sespt_lespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
-            sespt_lespt_instance = Flowshop(sespt_lespt_job_machine_matrix, np.array(waiting_patients_ids))
-            sespt_lespt_result_sequence = sespt_lespt_instance.sespt_lespt()
-            patient_idx = sespt_lespt_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                sespt_lespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
+                sespt_lespt_instance = Flowshop(sespt_lespt_job_machine_matrix, np.array(waiting_patients_ids))
+                sespt_lespt_result_sequence = sespt_lespt_instance.sespt_lespt()
+                patient_idx = sespt_lespt_result_sequence[0]
         # SEOPT_LEOPT
         elif action == 5:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            seopt_leopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
-            seopt_leopt_instance = Flowshop(seopt_leopt_job_machine_matrix, np.array(waiting_patients_ids))
-            seopt_leopt_result_sequence = seopt_leopt_instance.seopt_leopt()
-            patient_idx = seopt_leopt_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                seopt_leopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
+                seopt_leopt_instance = Flowshop(seopt_leopt_job_machine_matrix, np.array(waiting_patients_ids))
+                seopt_leopt_result_sequence = seopt_leopt_instance.seopt_leopt()
+                patient_idx = seopt_leopt_result_sequence[0]
         # LESPT_SESPT
         elif action == 6:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            lespt_sespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
-            lespt_sespt_instance = Flowshop(lespt_sespt_job_machine_matrix, np.array(waiting_patients_ids))
-            lespt_sespt_result_sequence = lespt_sespt_instance.lespt_sespt()
-            patient_idx = lespt_sespt_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                lespt_sespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
+                lespt_sespt_instance = Flowshop(lespt_sespt_job_machine_matrix, np.array(waiting_patients_ids))
+                lespt_sespt_result_sequence = lespt_sespt_instance.lespt_sespt()
+                patient_idx = lespt_sespt_result_sequence[0]
         # LEOPT_SEOPT
         elif action == 7:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            leopt_seopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
-            leopt_seopt_instance = Flowshop(leopt_seopt_job_machine_matrix, np.array(waiting_patients_ids))
-            leopt_seopt_result_sequence = leopt_seopt_instance.leopt_seopt()
-            patient_idx = leopt_seopt_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                leopt_seopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
+                leopt_seopt_instance = Flowshop(leopt_seopt_job_machine_matrix, np.array(waiting_patients_ids))
+                leopt_seopt_result_sequence = leopt_seopt_instance.leopt_seopt()
+                patient_idx = leopt_seopt_result_sequence[0]
         # SESPT
         elif action == 8:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            sespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
-            sespt_instance = Flowshop(sespt_job_machine_matrix, np.array(waiting_patients_ids))
-            sespt_result_sequence = sespt_instance.sespt()
-            patient_idx = sespt_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                sespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
+                sespt_instance = Flowshop(sespt_job_machine_matrix, np.array(waiting_patients_ids))
+                sespt_result_sequence = sespt_instance.sespt()
+                patient_idx = sespt_result_sequence[0]
         # SEOPT
         elif action == 9:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            seopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
-            seopt_instance = Flowshop(seopt_job_machine_matrix, np.array(waiting_patients_ids))
-            seopt_result_sequence = seopt_instance.seopt()
-            patient_idx = seopt_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                seopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
+                seopt_instance = Flowshop(seopt_job_machine_matrix, np.array(waiting_patients_ids))
+                seopt_result_sequence = seopt_instance.seopt()
+                patient_idx = seopt_result_sequence[0]
         # LESPT
         elif action == 10:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            lespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
-            lespt_instance = Flowshop(lespt_job_machine_matrix, np.array(waiting_patients_ids))
-            lespt_result_sequence = lespt_instance.lespt()
-            patient_idx = lespt_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                lespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
+                lespt_instance = Flowshop(lespt_job_machine_matrix, np.array(waiting_patients_ids))
+                lespt_result_sequence = lespt_instance.lespt()
+                patient_idx = lespt_result_sequence[0]
         # LEOPT
         elif action == 11:
-            job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
-            leopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
-            leopt_instance = Flowshop(leopt_job_machine_matrix, np.array(waiting_patients_ids))
-            leopt_result_sequence = leopt_instance.leopt()
-            patient_idx = leopt_result_sequence[0]
+            if len(waiting_patients_ids) == 1:
+                patient_idx = waiting_patients_ids[0]
+            else:
+                job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
+                leopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
+                leopt_instance = Flowshop(leopt_job_machine_matrix, np.array(waiting_patients_ids))
+                leopt_result_sequence = leopt_instance.leopt()
+                patient_idx = leopt_result_sequence[0]
         # Find chosen patient object according to patient_idx
         chosen_patient_location = waiting_patients_ids.index(patient_idx)
         patient = waiting_patients[chosen_patient_location]
@@ -316,6 +354,8 @@ class OperatingRoomScheduling(gym.Env):
                     )
                 # Remove current event from fel
                 self.future_event_list.remove(current_event)
+        observation = None
+        reward = None
         return observation, reward, problem_terminated, False, None
 
 
@@ -347,4 +387,3 @@ class Resource:
         self.rate = rate
         self.job_under_process = None
         self.done_jobs_sequence = list()
-
