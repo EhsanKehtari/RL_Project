@@ -81,8 +81,6 @@ class OperatingRoomScheduling(gym.Env):
         resource.block = True
         resource.job_under_process = None
         resource.done_jobs_sequence.append(patient)
-        # Move resource to idle resources list
-        self.take_action_info['Stage 1']['Idle Resources'].append(resource)
 
     def end_of_peri_operative(self, patient, resource):
         # Modify patient's attributes
@@ -95,8 +93,6 @@ class OperatingRoomScheduling(gym.Env):
         resource.block = True
         resource.job_under_process = None
         resource.done_jobs_sequence.append(patient)
-        # Move resource to idle resources list
-        self.take_action_info['Stage 2']['Idle Resources'].append(resource)
 
     def end_of_post_operative(self, patient, resource):
         # Modify patient's attributes
@@ -125,122 +121,90 @@ class OperatingRoomScheduling(gym.Env):
         waiting_patients_ids = list()
         for patient in waiting_patients:
             waiting_patients_ids.append(patient.id)
-        # Map actions to heuristics and execute the chosen heuristic
-        # CDS
-        if action == 0:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+        # No need to execute a heuristic if only one patient is ready to undergo a process in any given stage
+        if len(waiting_patients_ids) == 1:
+            patient_idx = waiting_patients_ids[0]
+        else:
+            # Map actions to heuristics and execute the chosen heuristic
+            # CDS
+            if action == 0:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 cds_job_machine_matrix = self.job_machine_matrix[job_idx][:, numeric_stage_under_study:]
                 cds_instance = Flowshop(cds_job_machine_matrix, np.array(waiting_patients_ids))
                 cds_result_sequence = cds_instance.cds()
                 patient_idx = cds_result_sequence[0]
-        # NEH
-        elif action == 1:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+            # NEH
+            elif action == 1:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 neh_job_machine_matrix = self.job_machine_matrix[job_idx][:, numeric_stage_under_study:]
                 neh_instance = Flowshop(neh_job_machine_matrix, np.array(waiting_patients_ids))
                 neh_result_sequence = neh_instance.cds()
                 patient_idx = neh_result_sequence[0]
-        # MST
-        elif action == 2:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+            # MST
+            elif action == 2:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 mst_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
                 mst_instance = Flowshop(mst_job_machine_matrix, np.array(waiting_patients_ids))
                 mst_result_sequence = mst_instance.mst()
                 patient_idx = mst_result_sequence[0]
-        # MOT
-        elif action == 3:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+            # MOT
+            elif action == 3:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 mot_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
                 mot_instance = Flowshop(mot_job_machine_matrix, np.array(waiting_patients_ids))
                 mot_result_sequence = mot_instance.mot()
                 patient_idx = mot_result_sequence[0]
-        # SESPT_LESPT
-        elif action == 4:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+            # SESPT_LESPT
+            elif action == 4:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 sespt_lespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
                 sespt_lespt_instance = Flowshop(sespt_lespt_job_machine_matrix, np.array(waiting_patients_ids))
                 sespt_lespt_result_sequence = sespt_lespt_instance.sespt_lespt()
                 patient_idx = sespt_lespt_result_sequence[0]
-        # SEOPT_LEOPT
-        elif action == 5:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+            # SEOPT_LEOPT
+            elif action == 5:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 seopt_leopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
                 seopt_leopt_instance = Flowshop(seopt_leopt_job_machine_matrix, np.array(waiting_patients_ids))
                 seopt_leopt_result_sequence = seopt_leopt_instance.seopt_leopt()
                 patient_idx = seopt_leopt_result_sequence[0]
-        # LESPT_SESPT
-        elif action == 6:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+            # LESPT_SESPT
+            elif action == 6:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 lespt_sespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
                 lespt_sespt_instance = Flowshop(lespt_sespt_job_machine_matrix, np.array(waiting_patients_ids))
                 lespt_sespt_result_sequence = lespt_sespt_instance.lespt_sespt()
                 patient_idx = lespt_sespt_result_sequence[0]
-        # LEOPT_SEOPT
-        elif action == 7:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+            # LEOPT_SEOPT
+            elif action == 7:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 leopt_seopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
                 leopt_seopt_instance = Flowshop(leopt_seopt_job_machine_matrix, np.array(waiting_patients_ids))
                 leopt_seopt_result_sequence = leopt_seopt_instance.leopt_seopt()
                 patient_idx = leopt_seopt_result_sequence[0]
-        # SESPT
-        elif action == 8:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+            # SESPT
+            elif action == 8:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 sespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
                 sespt_instance = Flowshop(sespt_job_machine_matrix, np.array(waiting_patients_ids))
                 sespt_result_sequence = sespt_instance.sespt()
                 patient_idx = sespt_result_sequence[0]
-        # SEOPT
-        elif action == 9:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+            # SEOPT
+            elif action == 9:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 seopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
                 seopt_instance = Flowshop(seopt_job_machine_matrix, np.array(waiting_patients_ids))
                 seopt_result_sequence = seopt_instance.seopt()
                 patient_idx = seopt_result_sequence[0]
-        # LESPT
-        elif action == 10:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+            # LESPT
+            elif action == 10:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 lespt_job_machine_matrix = self.job_machine_matrix[job_idx][:, 1]
                 lespt_instance = Flowshop(lespt_job_machine_matrix, np.array(waiting_patients_ids))
                 lespt_result_sequence = lespt_instance.lespt()
                 patient_idx = lespt_result_sequence[0]
-        # LEOPT
-        elif action == 11:
-            if len(waiting_patients_ids) == 1:
-                patient_idx = waiting_patients_ids[0]
-            else:
+            # LEOPT
+            elif action == 11:
                 job_idx = [int(np.argwhere(self.jobs == patient)) for patient in waiting_patients_ids]
                 leopt_job_machine_matrix = np.sum(self.job_machine_matrix[job_idx], axis=1)
                 leopt_instance = Flowshop(leopt_job_machine_matrix, np.array(waiting_patients_ids))
@@ -258,19 +222,39 @@ class OperatingRoomScheduling(gym.Env):
         patient.block = False
         patient.current_stage = resource.id[0]
         if patient.current_stage == 1:
+            # Patient starts getting service
             patient.start_pre_operating = current_clock
+            # Resource's service rate changes pre-defined pre-operating time
+            patient.pre_operating_time *= resource.rate
+            # Patient's end of service changes according to clock and assigned resource's service rate
+            patient.end_pre_operating = patient.start_pre_operating + patient.pre_operating_time
         elif patient.current_stage == 2:
+            # Patient starts getting service
             patient.start_peri_operating = current_clock
+            # Resource's service rate changes pre-defined pre-operating time
+            patient.peri_operating_time *= resource.rate
+            # Patient's end of service changes according to clock and assigned resource's service rate
+            patient.end_peri_operating = patient.start_peri_operating + patient.peri_operating_time
         else:
+            # Patient starts getting service
             patient.start_post_operating = current_clock
+            # Resource's service rate changes pre-defined pre-operating time
+            patient.post_operating_time *= resource.rate
+            # Patient's end of service changes according to clock and assigned resource's service rate
+            patient.end_post_operating = patient.start_post_operating + patient.post_operating_time
         # Remove patient from current stage's waiting patients list
         self.take_action_info['Stage ' + str(patient.current_stage)]['Waiting Patients'].remove(patient)
         # Modify resource's attributes
         resource.working_status = True
         resource.block = False
         resource.job_under_process = patient
-        # Remove resource from current stage's idle resources list
+        # Add previous resource to previous stage's idle resources list
+        if 1 < resource.id[0]:
+            self.take_action_info['Stage ' + str(resource.id[0] - 1)]['Idle Resources'].append(patient.assigned_resource)
+        # Remove current resource from current stage's idle resources list
         self.take_action_info['Stage ' + str(resource.id[0])]['Idle Resources'].remove(resource)
+        # Modify patient's current assigned resource
+        patient.assigned_resource = resource
         # Determine event type based on stage number
         if resource.id[0] == 1:
             event_type = 'End of Pre-Operative'
@@ -287,16 +271,10 @@ class OperatingRoomScheduling(gym.Env):
 
     def fel_maker(self, patient, resource, event_type):
         if event_type == 'End of Pre-Operative':
-            # Resource's service rate changes pre-defined pre-operating time
-            patient.pre_operating_time *= resource.rate
             event_time = patient.end_pre_operating
         elif event_type == 'End of Peri-Operative':
-            # Resource's service rate changes pre-defined peri-operating time
-            patient.peri_operating_time *= resource.rate
             event_time = patient.end_peri_operating
         else:
-            # Resource's service rate changes pre-defined post-operating time
-            patient.post_operating_time *= resource.rate
             event_time = patient.end_post_operating
         self.future_event_list.append({
             'Event Type': event_type,
@@ -367,6 +345,7 @@ class Patient:
         self.dismissed = False
         if self.service_condition[2] == 1:
             self.dismissed = True
+        self.assigned_resource = None
         self.current_stage = 0
         self.pre_operating_time = pre_operating_time
         self.peri_operating_time = peri_operating_time
