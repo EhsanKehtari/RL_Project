@@ -2,7 +2,7 @@
 ## Abstract
 This project is meant to apply Reinforcement Learning (Rl) approach to Operating Room Scheduling problem. 
 
-Classified as a Flexible Flowshop problem, a pre-determined set of patients go through 3 stages, namely PreOperative, PeriOperative, and PostOperative, to get service. Due to the stochasticity inherent in processing time of operations at each stage, and the infinite number of possible scenarios to deal with patients in the long-run, this problem is considered to be NP-hard. In a broader look to this problem, one can see that all optimization, scheduling, and simulation areas are involved, and that to achieve an acceptable result, a holistic view that takes into account all previous areas of knowledge is inevitable. In an attempt to address all concerns mentioned, this problem is fisrt formalized as an MDP and then an RL approach is implemented.
+Classified as a Flexible Flowshop problem, a pre-determined set of patients go through 3 stages, namely PreOperative, PeriOperative, and PostOperative, to get service. Due to the stochasticity inherent in processing time of operations at each stage, and the infinite number of possible scenarios to deal with patients in the long-run, this problem is considered to be NP-hard. In a broader look to this problem, one can see that all optimization, scheduling, and simulation areas are involved, and that to achieve an acceptable result, a holistic view that takes all previous areas of knowledge into account is inevitable. In an attempt to address all concerns mentioned, this problem is fisrt formalized as an MDP and then an RL approach is implemented.
 
 Also, for the sake of broader applicabilty for further studies, gym-friendly environments are created.
 
