@@ -7,9 +7,9 @@ Classified as a Flexible Flowshop problem, a pre-determined set of patients go t
 Also, for the sake of broader applicabilty for further studies, gym-friendly environments are created.
 
 ## Phase I: Literature Review (finished)
-Literature review of previous works on this topic
+Literature review of previous works on this topic.
 ## Phase II: Heuristics (finished)
-Implementing heuristics proposed in the literature and self-devised heuristics
+Implementing heuristics proposed in the literature and self-devised heuristics.
 ## Phase III: Environment Creation (Ongoing)
-Creating several gym-friendly environments to study and examine different solutions and ideas
+Creating several gym-friendly environments to study and examine different solutions and ideas.
 ## Phase IV: Problem Solution (Not started) 
