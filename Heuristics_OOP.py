@@ -93,7 +93,6 @@ class Flowshop:
         :param job_machine_matrix: matrix of process times of jobs on machines;
                                    shape: (number of jobs, number of machines)
         :param jobs: jobs with associated numbers; shape: (number of jobs,)
-        :param selected_machines: machines to be considered from job_machine_matrix, 'all' by default.
         """
         self.job_machine_matrix = job_machine_matrix
         self.jobs = jobs

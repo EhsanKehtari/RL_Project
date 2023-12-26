@@ -17,31 +17,36 @@ class Crossover_helper:
         :param gene_2: a gene to be considered for fitness
         :param job_machine_matrix: matrix of process times of jobs on machines;
                                    shape: (number of jobs, number of machines)
+        :param jobs: jobs with associated numbers; shape: (number of jobs,)
         :return: the fittest gene
         """
-        # Find genes' corresponding rows in job_machine_matrix
-        gene_1_location = int(np.argwhere(jobs == gene_1))
-        gene_2_location = int(np.argwhere(jobs == gene_2))
-        # Check fitness criteria
-        # Pre-operative
-        if job_machine_matrix[gene_1_location, 0] > job_machine_matrix[gene_2_location, 0]:
+        # Same genes have the same fitness
+        if gene_1 == gene_2:
             return gene_1
-        elif job_machine_matrix[gene_1_location, 0] < job_machine_matrix[gene_2_location, 0]:
-            return gene_2
         else:
-            # Peri-operative
-            if job_machine_matrix[gene_1_location, 1] > job_machine_matrix[gene_2_location, 1]:
+            # Find genes' corresponding rows in job_machine_matrix
+            gene_1_location = int(np.argwhere(jobs == gene_1))
+            gene_2_location = int(np.argwhere(jobs == gene_2))
+            # Check fitness criteria
+            # Pre-operative
+            if job_machine_matrix[gene_1_location, 0] > job_machine_matrix[gene_2_location, 0]:
                 return gene_1
-            elif job_machine_matrix[gene_1_location, 1] < job_machine_matrix[gene_2_location, 1]:
+            elif job_machine_matrix[gene_1_location, 0] < job_machine_matrix[gene_2_location, 0]:
                 return gene_2
             else:
-                #  Post-operative
-                if job_machine_matrix[gene_1_location, 2] > job_machine_matrix[gene_2_location, 2]:
+                # Peri-operative
+                if job_machine_matrix[gene_1_location, 1] > job_machine_matrix[gene_2_location, 1]:
                     return gene_1
-                elif job_machine_matrix[gene_1_location, 2] < job_machine_matrix[gene_2_location, 2]:
+                elif job_machine_matrix[gene_1_location, 1] < job_machine_matrix[gene_2_location, 1]:
                     return gene_2
                 else:
-                    return gene_1
+                    #  Post-operative
+                    if job_machine_matrix[gene_1_location, 2] > job_machine_matrix[gene_2_location, 2]:
+                        return gene_1
+                    elif job_machine_matrix[gene_1_location, 2] < job_machine_matrix[gene_2_location, 2]:
+                        return gene_2
+                    else:
+                        return gene_1
 
     @staticmethod
     def identify_next_gene(current_gene: int, chromosome: ndarray, offspring: ndarray) -> Tuple[bool, int]:
@@ -113,15 +118,54 @@ class Crossover:
             else:
                 parent_2, parent_1 = self.chromosome_1, self.chromosome_2
                 selected_offspring = self.offspring_2
+            # next gene location in offspring
+            next_gene_location_in_selected_offspring = 0
             # Initialize and record the first gene of the selected_offspring
-            selected_offspring[0] = parent_1[0]
-            selected_gene = parent_1[0]
+            selected_gene = parent_1[next_gene_location_in_selected_offspring]
+            selected_offspring[next_gene_location_in_selected_offspring] = selected_gene
             # Populate selected_offspring with other remaining genes
-            while selected_offspring[-1] != 0:
-                # Locate the selected gene in the parents
-                selected_gene_location_in_parent_1 = int(np.argwhere(parent_1 == selected_gene))
-                selected_gene_location_in_parent_2 = int(np.argwhere(parent_2 == selected_gene))
-                next_gene_1 =
+            while next_gene_location_in_selected_offspring <= len(selected_offspring) - 2:
+                next_gene_location_in_selected_offspring += 1
+                # Parent 1
+                next_gene_1_available, next_gene_1 = Crossover_helper().identify_next_gene(
+                    current_gene=selected_gene,
+                    chromosome=parent_1,
+                    offspring=selected_offspring
+                )
+                # Parent 2
+                next_gene_2_available, next_gene_2 = Crossover_helper().identify_next_gene(
+                    current_gene=selected_gene,
+                    chromosome=parent_2,
+                    offspring=selected_offspring
+                )
+                # Deciding on which gene to allocate
+                if next_gene_1_available and next_gene_2_available:
+                    temp = Crossover_helper().fittest(
+                        gene_1=next_gene_1,
+                        gene_2=next_gene_2,
+                        job_machine_matrix=self.job_machine_matrix
+                    )
+                elif next_gene_1_available and not next_gene_2_available:
+                    temp = next_gene_1
+                elif not next_gene_1_available and next_gene_2_available:
+                    temp = next_gene_2
+                else:
+                    temp = Crossover_helper().fittest(
+                        gene_1=next_gene_1,
+                        gene_2=next_gene_2,
+                        job_machine_matrix=self.job_machine_matrix
+                    )
+                # Update selected_gene with temp as the next selected gene
+                selected_gene = temp
+                # Update selected_offspring with the new selected_gene
+                selected_offspring[next_gene_location_in_selected_offspring] = selected_gene
+            # To motivate the reproduction of the other offspring
+            parent_random_number = 1 - parent_random_number
+
+
+
+
+
 
 
 
