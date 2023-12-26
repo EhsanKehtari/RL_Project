@@ -161,6 +161,7 @@ class Crossover:
                 selected_offspring[next_gene_location_in_selected_offspring] = selected_gene
             # To motivate the reproduction of the other offspring
             parent_random_number = 1 - parent_random_number
+        return self.offspring_1, self.offspring_2
 
 
 
