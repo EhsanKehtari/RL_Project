@@ -41,7 +41,6 @@ class Crossover_helper:
                 else:
                     return gene_1
 
-
 class Crossover:
     """
     Implement well-known crossovers in flowshop problem.
@@ -77,8 +76,13 @@ class Crossover:
             else:
                 parent_2, parent_1 = self.chromosome_1, self.chromosome_2
                 selected_offspring = self.offspring_2
-            # Initialize the first gene of the selected_offspring
+            # Initialize and record the first gene of the selected_offspring
             selected_offspring[0] = parent_1[0]
+            selected_gene = parent_1[0]
+            # Put other genes in the selected_offspring
+            while selected_offspring[-1] != 0:
+                next_gene_1 =
+
 
 
 
