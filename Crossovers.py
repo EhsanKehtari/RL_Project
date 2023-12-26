@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy as np
 from numpy import ndarray
 import random
@@ -41,6 +43,41 @@ class Crossover_helper:
                 else:
                     return gene_1
 
+    @staticmethod
+    def identify_next_gene(current_gene: int, chromosome: ndarray, offspring: ndarray) -> Tuple[bool, int]:
+        """
+        Identify availability of the next gene in a chromosome
+        :param current_gene: current gene
+        :param chromosome: the chromosome we are interested to study
+        :param offspring: the offspring that affects the availability of the next gene
+        :return: a tuple indicating whether the immediate gene following the current gene is available
+                 and the next gene available
+
+        return types
+        1. (True, X): the immediate gene following the current gene is available and it is X.
+        2. (False, Y): the immediate gene following the current gene is NOT available but the next available gene is Y.
+        """
+        # Locate the current gene in the given chromosome
+        current_gene_location = int(np.argwhere(chromosome == current_gene))
+        # availability criteria 1
+        if current_gene_location + 1 > len(chromosome) - 1:
+            _, next_available_gene = Crossover_helper().identify_next_gene(
+                current_gene=int(chromosome[(current_gene_location + 1) % (len(chromosome) - 1)]),
+                chromosome=chromosome,
+                offspring=offspring
+            )
+            return False, next_available_gene
+        elif chromosome[current_gene_location + 1] in offspring:
+            _, next_available_gene = Crossover_helper().identify_next_gene(
+                current_gene=int(chromosome[(current_gene_location + 1) % (len(chromosome) - 1)]),
+                chromosome=chromosome,
+                offspring=offspring
+            )
+            return False, next_available_gene
+        else:
+            next_available_gene = chromosome[(current_gene_location + 1)]
+            return True, next_available_gene
+
 class Crossover:
     """
     Implement well-known crossovers in flowshop problem.
@@ -79,8 +116,11 @@ class Crossover:
             # Initialize and record the first gene of the selected_offspring
             selected_offspring[0] = parent_1[0]
             selected_gene = parent_1[0]
-            # Put other genes in the selected_offspring
+            # Populate selected_offspring with other remaining genes
             while selected_offspring[-1] != 0:
+                # Locate the selected gene in the parents
+                selected_gene_location_in_parent_1 = int(np.argwhere(parent_1 == selected_gene))
+                selected_gene_location_in_parent_2 = int(np.argwhere(parent_2 == selected_gene))
                 next_gene_1 =
 
 
