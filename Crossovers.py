@@ -83,6 +83,21 @@ class Crossover_helper:
             next_available_gene = chromosome[(current_gene_location + 1)]
             return True, next_available_gene
 
+    @staticmethod
+    def mapping_relationship(gene: int, mapping_section_1: ndarray, mapping_section_2: ndarray) -> int:
+        """
+        Determine mapping relationship for a PMX crossover.
+        :param gene: the gene we are interested to find the mapping relationship for
+        :param mapping_section_1: mapping section derived from chromosome 1 (gene's chromosome)
+        :param mapping_section_2: mapping section derived from chromosome 2
+        :return: related gene
+        """
+        temp_gene = gene
+        while temp_gene in mapping_section_2:
+            common_gene_arg = int(np.argwhere(mapping_section_2 == temp_gene))
+            temp_gene = mapping_section_1[common_gene_arg]
+        return temp_gene
+
 class Crossover:
     """
     Implement well-known crossovers in flowshop problem.
@@ -105,7 +120,11 @@ class Crossover:
         self.job_machine_matrix = job_machine_matrix
         self.jobs = jobs
 
-    def nxo(self):
+    def nxo(self) -> Tuple[ndarray, ndarray]:
+        """
+        Implement NXO crossover.
+        :return: (tuple) two offsprings reproduced from given parents.
+        """
         # NXO requirements checking point
         assert not (self.job_machine_matrix is None), "NXO crossover requires job machine matrix to be specified."
         # For parent1 selection at random
@@ -159,8 +178,57 @@ class Crossover:
                 selected_gene = temp
                 # Update selected_offspring with the new selected_gene
                 selected_offspring[next_gene_location_in_selected_offspring] = selected_gene
-            # To motivate the reproduction of the other offspring
+            # To trigger the reproduction of the other offspring
             parent_random_number = 1 - parent_random_number
+        return self.offspring_1, self.offspring_2
+
+    def pmx(self) -> Tuple[ndarray, ndarray]:
+        """
+        Implement PMX crossover
+        :return: (tuple) two offsprings reproduced from given parents.
+        """
+        # Random positions to indicate the mapping section
+        random_positions = np.random.randint(
+            low=0,
+            high=len(self.offspring_1),
+            size=2
+        )
+        # Avoid duplicates
+        while random_positions[0] == random_positions[1]:
+            random_positions = np.random.randint(
+                low=0,
+                high=len(self.offspring_1),
+                size=2
+            )
+        # Lower and upper bound for mapping section
+        low = random_positions.min()
+        high = random_positions.max()
+        # Populating offsprings
+        for gene_num in range(len(self.offspring_1)):
+            # Mapping Section
+            if low <= gene_num <= high:
+                self.offspring_1[gene_num], self.offspring_2[gene_num] = \
+                    self.chromosome_2[gene_num], self.chromosome_1[gene_num]
+            # For genes not in mapping section
+            else:
+                # Offspring 1
+                if self.chromosome_1[gene_num] in self.chromosome_2[low: high + 1]:
+                    self.offspring_1 = Crossover_helper().mapping_relationship(
+                        gene=self.chromosome_1[gene_num],
+                        mapping_section_1=self.chromosome_1[low: high + 1],
+                        mapping_section_2=self.chromosome_2[low: high + 1]
+                    )
+                else:
+                    self.offspring_1[gene_num] = self.chromosome_1[gene_num]
+                # Offspring 2
+                if self.chromosome_2[gene_num] in self.chromosome_1[low: high + 1]:
+                    self.offspring_2 = Crossover_helper().mapping_relationship(
+                        gene=self.chromosome_2[gene_num],
+                        mapping_section_1=self.chromosome_2[low: high + 1],
+                        mapping_section_2=self.chromosome_1[low: high + 1]
+                    )
+                else:
+                    self.offspring_2[gene_num] = self.chromosome_2[gene_num]
         return self.offspring_1, self.offspring_2
 
 
