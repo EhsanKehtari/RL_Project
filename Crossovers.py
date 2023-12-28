@@ -3,7 +3,7 @@ from typing import Tuple
 import numpy as np
 from numpy import ndarray
 import random
-
+random.seed(123)
 
 class Crossover_helper:
     def __init__(self):
@@ -105,7 +105,7 @@ class Crossover:
     - NXO
     """
 
-    def __init__(self, chromosome_1: ndarray, chromosome_2: ndarray, job_machine_matrix: None, jobs: None):
+    def __init__(self, chromosome_1: ndarray, chromosome_2: ndarray, job_machine_matrix=None, jobs=None):
         """
         :param chromosome_1: one parent to be considered for reproducing offsprings
         :param chromosome_2: one parent to be considered for reproducing offsprings
@@ -207,13 +207,13 @@ class Crossover:
         for gene_num in range(len(self.offspring_1)):
             # Mapping Section
             if low <= gene_num <= high:
-                self.offspring_1[gene_num], self.offspring_2[gene_num] = \
-                    self.chromosome_2[gene_num], self.chromosome_1[gene_num]
+                self.offspring_1[gene_num] = self.chromosome_2[gene_num]
+                self.offspring_2[gene_num] = self.chromosome_1[gene_num]
             # For genes not in mapping section
             else:
                 # Offspring 1
                 if self.chromosome_1[gene_num] in self.chromosome_2[low: high + 1]:
-                    self.offspring_1 = Crossover_helper().mapping_relationship(
+                    self.offspring_1[gene_num] = Crossover_helper().mapping_relationship(
                         gene=self.chromosome_1[gene_num],
                         mapping_section_1=self.chromosome_1[low: high + 1],
                         mapping_section_2=self.chromosome_2[low: high + 1]
@@ -222,7 +222,7 @@ class Crossover:
                     self.offspring_1[gene_num] = self.chromosome_1[gene_num]
                 # Offspring 2
                 if self.chromosome_2[gene_num] in self.chromosome_1[low: high + 1]:
-                    self.offspring_2 = Crossover_helper().mapping_relationship(
+                    self.offspring_2[gene_num] = Crossover_helper().mapping_relationship(
                         gene=self.chromosome_2[gene_num],
                         mapping_section_1=self.chromosome_2[low: high + 1],
                         mapping_section_2=self.chromosome_1[low: high + 1]
@@ -230,11 +230,6 @@ class Crossover:
                 else:
                     self.offspring_2[gene_num] = self.chromosome_2[gene_num]
         return self.offspring_1, self.offspring_2
-
-
-
-
-
 
 
 
