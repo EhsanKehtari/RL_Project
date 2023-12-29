@@ -70,7 +70,8 @@ class Crossover_helper:
         # Whether current gene has already been checked
         if current_gene_checked:
             # availability criteria
-            if (current_gene_location + 1 > len(chromosome) - 1) or (chromosome[current_gene_location + 1] in offspring):
+            if (current_gene_location + 1 > len(chromosome) - 1) or (
+                    chromosome[current_gene_location + 1] in offspring):
                 _, next_available_gene = Crossover_helper().identify_next_gene(
                     current_gene=int(chromosome[(current_gene_location + 1) % len(chromosome)]),
                     chromosome=chromosome,
@@ -110,6 +111,7 @@ class Crossover_helper:
             temp_gene = mapping_section_1[common_gene_arg]
         return temp_gene
 
+
 class Crossover:
     """
     Implement well-known crossovers in flowshop problem.
@@ -144,7 +146,7 @@ class Crossover:
         # Offsprings reproduction
         for i in range(2):
             if parent_random_number <= 0.5:
-                parent_1, parent_2= self.chromosome_1, self.chromosome_2
+                parent_1, parent_2 = self.chromosome_1, self.chromosome_2
                 selected_offspring = self.offspring_1
             else:
                 parent_2, parent_1 = self.chromosome_1, self.chromosome_2
@@ -198,7 +200,7 @@ class Crossover:
 
     def pmx(self) -> Tuple[ndarray, ndarray]:
         """
-        Implement PMX crossover
+        Implement PMX crossover.
         :return: (tuple) two offsprings reproduced from given parents.
         """
         # Random positions to indicate the mapping section
@@ -243,4 +245,48 @@ class Crossover:
                     )
                 else:
                     self.offspring_2[gene_num] = self.chromosome_2[gene_num]
+        return self.offspring_1, self.offspring_2
+
+    def pbx(self, number_of_positions: int) -> Tuple[ndarray, ndarray]:
+        """
+        Implement PBX crossover.
+        :param number_of_positions: the number of positions to be selected at random.
+        :return: (tuple) two offsprings reproduced from given parents.
+        """
+        # Sanity Check
+        assert number_of_positions < len(self.offspring_1), 'Less number of positions expected.'
+        # Random permutation on positions
+        random_positions_permutation = list(
+            np.random.permutation(len(self.offspring_1))
+        )
+        # Selecting the first number_of_positions as special positions
+        special_positions = random_positions_permutation[:number_of_positions]
+        # For parent1 selection at random
+        parent_random_number = random.random()
+        for i in range(2):
+            if parent_random_number <= 0.5:
+                parent_1, parent_2 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_1
+            else:
+                parent_2, parent_1 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_2
+            # Two lists to store genes in special positions and genes other than those in special positions
+            genes_in_special_positions = list()
+            genes_in_non_special_positions = list()
+            # Find genes in special positions
+            for position in range(len(self.offspring_1)):
+                if position in special_positions:
+                    genes_in_special_positions.append(parent_1[position])
+            # Find genes other that those in special positions
+            for gene in parent_2:
+                if not (gene in genes_in_special_positions):
+                    genes_in_non_special_positions.append(gene)
+            # Offspring reproduction logic
+            for gene_num in range(len(selected_offspring)):
+                if gene_num in special_positions:
+                    selected_offspring[gene_num] = parent_1[gene_num]
+                else:
+                    selected_offspring[gene_num] = genes_in_non_special_positions.pop(0)
+            # To trigger the reproduction of the other offspring
+            parent_random_number = 1 - parent_random_number
         return self.offspring_1, self.offspring_2
