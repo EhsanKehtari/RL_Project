@@ -3,7 +3,6 @@ from typing import Tuple
 import numpy as np
 from numpy import ndarray
 import random
-random.seed(123)
 
 class Crossover_helper:
     def __init__(self):
