@@ -49,12 +49,16 @@ class Crossover_helper:
                         return gene_1
 
     @staticmethod
-    def identify_next_gene(current_gene: int, chromosome: ndarray, offspring: ndarray) -> Tuple[bool, int]:
+    def identify_next_gene(current_gene: int,
+                           chromosome: ndarray,
+                           offspring: ndarray,
+                           current_gene_checked=True) -> Tuple[bool, int]:
         """
         Identify availability of the next gene in a chromosome
         :param current_gene: current gene
         :param chromosome: the chromosome we are interested to study
         :param offspring: the offspring that affects the availability of the next gene
+        :param current_gene_checked: to determine whether current gene has already been checked for availability
         :return: a tuple indicating whether the immediate gene following the current gene is available
                  and the next gene available
 
@@ -64,24 +68,33 @@ class Crossover_helper:
         """
         # Locate the current gene in the given chromosome
         current_gene_location = int(np.argwhere(chromosome == current_gene))
-        # availability criteria 1
-        if current_gene_location + 1 > len(chromosome) - 1:
-            _, next_available_gene = Crossover_helper().identify_next_gene(
-                current_gene=int(chromosome[(current_gene_location + 1) % (len(chromosome) - 1)]),
-                chromosome=chromosome,
-                offspring=offspring
-            )
-            return False, next_available_gene
-        elif chromosome[current_gene_location + 1] in offspring:
-            _, next_available_gene = Crossover_helper().identify_next_gene(
-                current_gene=int(chromosome[(current_gene_location + 1) % (len(chromosome) - 1)]),
-                chromosome=chromosome,
-                offspring=offspring
-            )
-            return False, next_available_gene
+        # Whether current gene has already been checked
+        if current_gene_checked:
+            # availability criteria
+            if (current_gene_location + 1 > len(chromosome) - 1) or (chromosome[current_gene_location + 1] in offspring):
+                _, next_available_gene = Crossover_helper().identify_next_gene(
+                    current_gene=int(chromosome[(current_gene_location + 1) % len(chromosome)]),
+                    chromosome=chromosome,
+                    offspring=offspring,
+                    current_gene_checked=False
+                )
+                return False, next_available_gene
+            else:
+                next_available_gene = chromosome[(current_gene_location + 1)]
+                return True, next_available_gene
         else:
-            next_available_gene = chromosome[(current_gene_location + 1)]
-            return True, next_available_gene
+            # availability criteria
+            if chromosome[current_gene_location] in offspring:
+                _, next_available_gene = Crossover_helper().identify_next_gene(
+                    current_gene=int(chromosome[(current_gene_location + 1) % len(chromosome)]),
+                    chromosome=chromosome,
+                    offspring=offspring,
+                    current_gene_checked=False
+                )
+                return False, next_available_gene
+            else:
+                next_available_gene = chromosome[current_gene_location]
+                return True, next_available_gene
 
     @staticmethod
     def mapping_relationship(gene: int, mapping_section_1: ndarray, mapping_section_2: ndarray) -> int:
@@ -162,7 +175,8 @@ class Crossover:
                     temp = Crossover_helper().fittest(
                         gene_1=next_gene_1,
                         gene_2=next_gene_2,
-                        job_machine_matrix=self.job_machine_matrix
+                        job_machine_matrix=self.job_machine_matrix,
+                        jobs=self.jobs
                     )
                 elif next_gene_1_available and not next_gene_2_available:
                     temp = next_gene_1
@@ -172,7 +186,8 @@ class Crossover:
                     temp = Crossover_helper().fittest(
                         gene_1=next_gene_1,
                         gene_2=next_gene_2,
-                        job_machine_matrix=self.job_machine_matrix
+                        job_machine_matrix=self.job_machine_matrix,
+                        jobs=self.jobs
                     )
                 # Update selected_gene with temp as the next selected gene
                 selected_gene = temp
@@ -230,10 +245,3 @@ class Crossover:
                 else:
                     self.offspring_2[gene_num] = self.chromosome_2[gene_num]
         return self.offspring_1, self.offspring_2
-
-
-
-
-
-
-
