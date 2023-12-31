@@ -110,13 +110,32 @@ class Crossover_helper:
             common_gene_arg = int(np.argwhere(mapping_section_2 == temp_gene))
             temp_gene = mapping_section_1[common_gene_arg]
         return temp_gene
-
+    @staticmethod
+    def gene_cycle_num_finder(gene: int, cycles: dict) -> int:
+        """
+        Determine the cycle number in which the desired gene is located in.
+        :param gene: the gene we are interested to locate in cycles.
+        :param cycles: a dictionary containing cycles.
+        :return: the cycle number in which the desired gene is located in.
+        """
+        found_cycle = False
+        cycle_num = 1
+        while not found_cycle:
+            if gene in cycles[cycle_num]:
+                found_cycle = True
+                break
+            else:
+                cycle_num += 1
+        return cycle_num
 
 class Crossover:
     """
     Implement well-known crossovers in flowshop problem.
     List of crossovers:
     - NXO
+    - PMX
+    - PBX
+    - OX
     """
 
     def __init__(self, chromosome_1: ndarray, chromosome_2: ndarray, job_machine_matrix=None, jobs=None):
@@ -339,3 +358,51 @@ class Crossover:
             parent_random_number = 1 - parent_random_number
         return self.offspring_1, self.offspring_2
 
+    def cx(self):
+        """
+        Implement CX crossover.
+        :return: (tuple) two offsprings reproduced from given parents.
+        """
+        # Numbering chromosomes
+        parent_1 = self.chromosome_1
+        parent_2 = self.chromosome_2
+        # Copy parent_1 (in order to avoid modification of parent_1)
+        parent_1_copied = list(np.copy(parent_1))
+        # Discovering cycles
+        cycles = dict()
+        cycle_num = 1
+        while len(parent_1_copied) != 0:
+            # Initiate cycle and remove cycle initiator from parent_1_copied
+            cycles[cycle_num] = list()
+            cycle_initiator = parent_1_copied[0]
+            cycles[cycle_num].append(cycle_initiator)
+            parent_1_copied.remove(cycle_initiator)
+            # Locating cycle_initiator in parent_1
+            cycle_initiator_location = int(np.argwhere(parent_1 == cycle_initiator))
+            # Finding corresponding gene in parent_2
+            next_gene = parent_2[cycle_initiator_location]
+            while cycle_initiator != next_gene:
+                # Append next_gene to cycle
+                cycles[cycle_num].append(next_gene)
+                # Remove next_gene from parent_1_copied
+                parent_1_copied.remove(next_gene)
+                # Locate next_gene in parent_1
+                next_gene_location_in_parent_1 = int(np.argwhere(parent_1 == next_gene))
+                # Find next_gene's corresponding gene in parent_2 and update next_gene
+                next_gene = parent_2[next_gene_location_in_parent_1]
+            # Update cycle_num for the next round
+            cycle_num += 1
+        # Offsprings initially filled in with corresponding parents
+        self.offspring_1 += parent_1
+        self.offspring_2 += parent_2
+        # Offspring Reproduction Logic
+        for gene_position in range(len(parent_1)):
+            gene_cycle_num = Crossover_helper().gene_cycle_num_finder(
+                gene=parent_1[gene_position],
+                cycles=cycles
+            )
+            # Only genes in even cycles are exchanged within parents.
+            if gene_cycle_num % 2 == 0:
+                self.offspring_1[gene_position], self.offspring_2[gene_position] = \
+                    self.offspring_2[gene_position], self.offspring_1[gene_position]
+        return self.offspring_1, self.offspring_2
