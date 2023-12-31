@@ -110,6 +110,7 @@ class Crossover_helper:
             common_gene_arg = int(np.argwhere(mapping_section_2 == temp_gene))
             temp_gene = mapping_section_1[common_gene_arg]
         return temp_gene
+
     @staticmethod
     def gene_cycle_num_finder(gene: int, cycles: dict) -> int:
         """
@@ -136,6 +137,7 @@ class Crossover:
     - PMX
     - PBX
     - OX
+    - CX
     """
 
     def __init__(self, chromosome_1: ndarray, chromosome_2: ndarray, job_machine_matrix=None, jobs=None):
@@ -266,14 +268,15 @@ class Crossover:
                     self.offspring_2[gene_num] = self.chromosome_2[gene_num]
         return self.offspring_1, self.offspring_2
 
-    def pbx(self, number_of_positions: int) -> Tuple[ndarray, ndarray]:
+    def pbx(self) -> Tuple[ndarray, ndarray]:
         """
         Implement PBX crossover.
-        :param number_of_positions: the number of positions to be selected at random.
         :return: (tuple) two offsprings reproduced from given parents.
         """
-        # Sanity Check
-        assert number_of_positions < len(self.offspring_1), 'Less number of positions expected.'
+        number_of_positions = np.random.randint(
+            low=1,
+            high=len(self.offspring_1)
+        )
         # Random permutation on positions
         random_positions_permutation = list(
             np.random.permutation(len(self.offspring_1))
@@ -331,7 +334,6 @@ class Crossover:
         # Lower and upper bound for substring selection
         low = random_positions.min()
         high = random_positions.max()
-        print(low + 1, high + 1)
         # For parent1 selection at random
         parent_random_number = random.random()
         for i in range(2):
@@ -406,3 +408,45 @@ class Crossover:
                 self.offspring_1[gene_position], self.offspring_2[gene_position] = \
                     self.offspring_2[gene_position], self.offspring_1[gene_position]
         return self.offspring_1, self.offspring_2
+
+    def obx(self):
+        """
+        Implement OBX crossover.
+        :return: (tuple) two offsprings reproduced from given parents.
+        """
+        number_of_positions = np.random.randint(
+            low=1,
+            high=len(self.offspring_1)
+        )
+        # Random permutation on positions
+        random_positions_permutation = list(
+            np.random.permutation(len(self.offspring_1))
+        )
+        # Selecting the first number_of_positions as special positions
+        special_positions = sorted(random_positions_permutation[:number_of_positions])
+        # For parent1 selection at random
+        parent_random_number = random.random()
+        for i in range(2):
+            if parent_random_number <= 0.5:
+                parent_1, parent_2 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_1
+            else:
+                parent_2, parent_1 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_2
+            # To identify genes in special positions
+            genes_from_parent_1 = np.take(parent_1, special_positions)
+            # To identify special genes' positions
+            positions_in_parent_2 = np.in1d(parent_2, genes_from_parent_1).nonzero()[0]
+            # To keep track of special genes
+            special_gene_num = 0
+            # Offspring reproduction logic
+            for gene_num in range(len(selected_offspring)):
+                if gene_num in positions_in_parent_2:
+                    selected_offspring[gene_num] = genes_from_parent_1[special_gene_num]
+                    special_gene_num += 1
+                else:
+                    selected_offspring[gene_num] = parent_2[gene_num]
+            # To trigger the reproduction of the other offspring
+            parent_random_number = 1 - parent_random_number
+        return self.offspring_1, self.offspring_2
+
