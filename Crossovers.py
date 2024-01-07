@@ -649,6 +649,105 @@ class Crossover:
             parent_random_number = 1 - parent_random_number
         return self.offspring_1, self.offspring_2
 
+    def nox(self) -> Tuple[ndarray, ndarray]:
+        """
+        Implement NOX crossover (New Order Crossover).
+        :return: (tuple) two offsprings reproduced from given parents.
+        """
+        # Random positions to indicate left, middle, and right sections
+        random_positions = np.random.randint(
+            low=0,
+            high=len(self.offspring_1),
+            size=2
+        )
+        # Avoid duplicates
+        while random_positions[0] == random_positions[1]:
+            random_positions = np.random.randint(
+                low=0,
+                high=len(self.offspring_1),
+                size=2
+            )
+        # Lower and upper bound for substring selection
+        low = random_positions.min()
+        high = random_positions.max()
+        low, high = 2, 4
+        # For parent1 selection at random
+        parent_random_number = random.random()
+        for i in range(2):
+            if parent_random_number <= 0.5:
+                parent_1, parent_2 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_1
+            else:
+                parent_2, parent_1 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_2
+            # Two lists to store genes in special positions and genes other than those in special positions
+            genes_in_special_positions = parent_1[low: high + 1]
+            genes_in_non_special_positions = list()
+            # Find genes other that those in special positions
+            for gene in parent_2:
+                if not (gene in genes_in_special_positions):
+                    genes_in_non_special_positions.append(gene)
+            # Offspring reproduction logic
+            for gene_num in range(high + 1, high + len(selected_offspring) + 1):
+                # To modify gene_num that now starts from the second cutting point onwards
+                modified_gene_num = gene_num % len(selected_offspring)
+                if modified_gene_num in range(low, high + 1):
+                    selected_offspring[modified_gene_num] = parent_1[modified_gene_num]
+                else:
+                    selected_offspring[modified_gene_num] = genes_in_non_special_positions.pop(0)
+            # To trigger the reproduction of the other offspring
+            parent_random_number = 1 - parent_random_number
+        return self.offspring_1, self.offspring_2
+
+    def mnox(self) -> Tuple[ndarray, ndarray]:
+        """
+        Implement MNOX crossover (Modified New Order Crossover).
+        :return: (tuple) two offsprings reproduced from given parents.
+        """
+        # Random positions to indicate left, middle, and right sections
+        random_positions = np.random.randint(
+            low=0,
+            high=len(self.offspring_1),
+            size=2
+        )
+        # Avoid duplicates
+        while random_positions[0] == random_positions[1]:
+            random_positions = np.random.randint(
+                low=0,
+                high=len(self.offspring_1),
+                size=2
+            )
+        # Lower and upper bound for substring selection
+        low = random_positions.min()
+        high = random_positions.max()
+        # For parent1 selection at random
+        parent_random_number = random.random()
+        for i in range(2):
+            if parent_random_number <= 0.5:
+                parent_1, parent_2 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_1
+            else:
+                parent_2, parent_1 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_2
+            # Two lists to store genes in special positions and genes other than those in special positions
+            genes_in_special_positions = parent_1[low: high + 1]
+            genes_in_non_special_positions = list()
+            # Find genes other that those in special positions
+            for position in range(high + 1, high + len(parent_2) + 1):
+                gene_to_be_considered = parent_2[position % len(parent_2)]
+                if not (gene_to_be_considered in genes_in_special_positions):
+                    genes_in_non_special_positions.append(gene_to_be_considered)
+            # Offspring reproduction logic
+            for gene_num in range(len(selected_offspring)):
+                if gene_num in range(low, high + 1):
+                    selected_offspring[gene_num] = parent_1[gene_num]
+                else:
+                    selected_offspring[gene_num] = genes_in_non_special_positions.pop(0)
+            # To trigger the reproduction of the other offspring
+            parent_random_number = 1 - parent_random_number
+        return self.offspring_1, self.offspring_2
+
+
 
 
 chro_1 = np.array(
@@ -661,4 +760,4 @@ cross = Crossover(
     chromosome_1=chro_1,
     chromosome_2=chro_2
 )
-print(cross.mox())
+print(cross.mnox())
