@@ -138,6 +138,7 @@ class Crossover:
     - PBX
     - OX
     - CX
+    - OBX
     """
 
     def __init__(self, chromosome_1: ndarray, chromosome_2: ndarray, job_machine_matrix=None, jobs=None):
@@ -315,7 +316,7 @@ class Crossover:
 
     def ox(self) -> Tuple[ndarray, ndarray]:
         """
-        Implement OX crossover.
+        Implement OX crossover. This crossover is sometimes referred to as LOX.
         :return: (tuple) two offsprings reproduced from given parents.
         """
         # Random positions to indicate the mapping section
@@ -360,7 +361,7 @@ class Crossover:
             parent_random_number = 1 - parent_random_number
         return self.offspring_1, self.offspring_2
 
-    def cx(self):
+    def cx(self) -> Tuple[ndarray, ndarray]:
         """
         Implement CX crossover.
         :return: (tuple) two offsprings reproduced from given parents.
@@ -409,7 +410,7 @@ class Crossover:
                     self.offspring_2[gene_position], self.offspring_1[gene_position]
         return self.offspring_1, self.offspring_2
 
-    def obx(self):
+    def obx(self) -> Tuple[ndarray, ndarray]:
         """
         Implement OBX crossover.
         :return: (tuple) two offsprings reproduced from given parents.
@@ -450,3 +451,147 @@ class Crossover:
             parent_random_number = 1 - parent_random_number
         return self.offspring_1, self.offspring_2
 
+    def opx(self) -> Tuple[ndarray, ndarray]:
+        """
+        Implement OPX crossover (One Point Crossover).
+        :return: (tuple) two offsprings reproduced from given parents.
+        """
+        # Random position to indicate left and right sections
+        random_position = np.random.randint(
+            low=0,
+            high=len(self.offspring_1)
+        )
+        # Lower and upper bound for substring selection
+        low = 0
+        high = random_position
+        # For parent1 selection at random
+        parent_random_number = random.random()
+        for i in range(2):
+            if parent_random_number <= 0.5:
+                parent_1, parent_2 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_1
+            else:
+                parent_2, parent_1 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_2
+            # Two lists to store genes in special positions and genes other than those in special positions
+            genes_in_special_positions = parent_1[low: high + 1]
+            genes_in_non_special_positions = list()
+            # Find genes other that those in special positions
+            for gene in parent_2:
+                if not (gene in genes_in_special_positions):
+                    genes_in_non_special_positions.append(gene)
+            # Offspring reproduction logic
+            for gene_num in range(len(selected_offspring)):
+                if gene_num in range(low, high + 1):
+                    selected_offspring[gene_num] = parent_1[gene_num]
+                else:
+                    selected_offspring[gene_num] = genes_in_non_special_positions.pop(0)
+            # To trigger the reproduction of the other offspring
+            parent_random_number = 1 - parent_random_number
+        return self.offspring_1, self.offspring_2
+
+    def tpx(self) -> Tuple[ndarray, ndarray]:
+        """
+        Implement TPX crossover (Two Point Crossover).
+        :return: (tuple) two offsprings reproduced from given parents.
+        """
+        # Random positions to indicate left, middle, and right sections
+        random_positions = np.random.randint(
+            low=0,
+            high=len(self.offspring_1),
+            size=2
+        )
+        # Avoid duplicates
+        while random_positions[0] == random_positions[1]:
+            random_positions = np.random.randint(
+                low=0,
+                high=len(self.offspring_1),
+                size=2
+            )
+        # Lower and upper bound for substring selection
+        low = random_positions.min()
+        high = random_positions.max()
+        # For parent1 selection at random
+        parent_random_number = random.random()
+        for i in range(2):
+            if parent_random_number <= 0.5:
+                parent_1, parent_2 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_1
+            else:
+                parent_2, parent_1 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_2
+            # Two lists to store genes in special positions and genes other than those in special positions
+            genes_in_special_positions = list(parent_1[:low]) + list(parent_1[high + 1:])
+            genes_in_non_special_positions = list()
+            # Find genes other that those in special positions
+            for gene in parent_2:
+                if not (gene in genes_in_special_positions):
+                    genes_in_non_special_positions.append(gene)
+            # Offspring reproduction logic
+            for gene_num in range(len(selected_offspring)):
+                if gene_num in range(low, high + 1):
+                    selected_offspring[gene_num] = genes_in_non_special_positions.pop(0)
+                else:
+                    selected_offspring[gene_num] = parent_1[gene_num]
+            # To trigger the reproduction of the other offspring
+            parent_random_number = 1 - parent_random_number
+        return self.offspring_1, self.offspring_2
+
+    def sjox(self) -> Tuple[ndarray, ndarray]:
+        """
+        Implement SJOX crossover.
+        :return: (tuple) two offsprings reproduced from given parents.
+        """
+        number_of_positions = np.random.randint(
+            low=1,
+            high=len(self.offspring_1)
+        )
+        # Random permutation on positions
+        random_positions_permutation = list(
+            np.random.permutation(len(self.offspring_1))
+        )
+        # Selecting the first number_of_positions as special positions
+        special_positions = random_positions_permutation[:number_of_positions]
+        # For parent1 selection at random
+        parent_random_number = random.random()
+        for i in range(2):
+            if parent_random_number <= 0.5:
+                parent_1, parent_2 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_1
+            else:
+                parent_2, parent_1 = self.chromosome_1, self.chromosome_2
+                selected_offspring = self.offspring_2
+            # Two lists to store genes in special positions and genes other than those in special positions
+            genes_in_special_positions = list()
+            genes_in_non_special_positions = list()
+            # Find genes in special positions
+            for position in range(len(self.offspring_1)):
+                if position in special_positions:
+                    genes_in_special_positions.append(parent_1[position])
+            # Find genes other that those in special positions
+            for gene in parent_2:
+                if not (gene in genes_in_special_positions):
+                    genes_in_non_special_positions.append(gene)
+            # Offspring reproduction logic
+            for gene_num in range(len(selected_offspring)):
+                if gene_num in special_positions:
+                    selected_offspring[gene_num] = parent_1[gene_num]
+                else:
+                    selected_offspring[gene_num] = genes_in_non_special_positions.pop(0)
+            # To trigger the reproduction of the other offspring
+            parent_random_number = 1 - parent_random_number
+        return self.offspring_1, self.offspring_2
+
+
+
+chro_1 = np.array(
+    [1, 2, 3, 4, 5, 6, 7]
+)
+chro_2 = np.array(
+    [4, 3, 7, 6, 2, 5, 1]
+)
+cross = Crossover(
+    chromosome_1=chro_1,
+    chromosome_2=chro_2
+)
+print(cross.tpx())
