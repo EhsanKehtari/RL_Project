@@ -70,7 +70,7 @@ class Mutation:
 
     def adj_m(self):
         """
-        Implement adjM operator (Adjacent two job change Mutation).
+        Implement adjM operator (Adjacent jobs change Mutation).
         :return: one mutated chromosome
         """
         # Random high position
@@ -85,8 +85,28 @@ class Mutation:
             self.mutated_chromosome[high], self.mutated_chromosome[low]
         return self.mutated_chromosome
 
+    def thj_m(self):
+        """
+        Implement thjM operator (3-jobs change Mutation).
+        :return: one mutated chromosome
+        """
+        # Select three random positions
+        random_positions = np.random.permutation(len(self.mutated_chromosome))[:3]
+        # Obtain a new permutation between selected positions
+        permuted_random_positions = np.random.permutation(random_positions)
+        print(random_positions + 1)
+        print(permuted_random_positions + 1)
+        # Mutation operator logic
+        for position in range(len(random_positions)):
+            self.mutated_chromosome[random_positions[position]], \
+                self.mutated_chromosome[permuted_random_positions[position]] = \
+                self.mutated_chromosome[permuted_random_positions[position]], \
+                    self.mutated_chromosome[random_positions[position]]
+        return self.mutated_chromosome
+
+
 chro_1 = np.array(
     [1, 2, 3, 4, 5, 6, 7]
 )
 mut = Mutation(chromosome=chro_1)
-print(mut.adj_m())
+print(mut.thj_m())
