@@ -68,8 +68,25 @@ class Mutation:
                 self.mutated_chromosome[high - step], self.mutated_chromosome[low + step]
         return self.mutated_chromosome
 
+    def adj_m(self):
+        """
+        Implement adjM operator (Adjacent two job change Mutation).
+        :return: one mutated chromosome
+        """
+        # Random high position
+        high_position = np.random.randint(
+            low=1,
+            high=len(self.mutated_chromosome)
+        )
+        low = high_position - 1
+        high = high_position
+        # Mutation operator logic
+        self.mutated_chromosome[low], self.mutated_chromosome[high] = \
+            self.mutated_chromosome[high], self.mutated_chromosome[low]
+        return self.mutated_chromosome
+
 chro_1 = np.array(
     [1, 2, 3, 4, 5, 6, 7]
 )
 mut = Mutation(chromosome=chro_1)
-print(mut.inv_m())
+print(mut.adj_m())
