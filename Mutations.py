@@ -49,10 +49,27 @@ class Mutation:
             self.mutated_chromosome[position_2], self.mutated_chromosome[position_1]
         return self.mutated_chromosome
 
-
+    def inv_m(self):
+        """
+        Implement invM operator (Inversion Mutation).
+        :return: one mutated chromosome
+        """
+        # Random permutation on positions to avoid duplication in boundaries
+        random_positions_permutation = np.random.permutation(len(self.chromosome))
+        # Define inversion boundary
+        low = random_positions_permutation[0]
+        high = random_positions_permutation[1]
+        if high < low:
+            low, high = high, low
+        # Mutation operator logic
+        number_of_steps = int(np.ceil((high - low) / 2))
+        for step in range(number_of_steps):
+            self.mutated_chromosome[low + step], self.mutated_chromosome[high - step] = \
+                self.mutated_chromosome[high - step], self.mutated_chromosome[low + step]
+        return self.mutated_chromosome
 
 chro_1 = np.array(
     [1, 2, 3, 4, 5, 6, 7]
 )
 mut = Mutation(chromosome=chro_1)
-print(mut.swp_m())
+print(mut.inv_m())
