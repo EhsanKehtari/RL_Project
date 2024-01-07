@@ -129,6 +129,22 @@ class Crossover_helper:
                 cycle_num += 1
         return cycle_num
 
+    @staticmethod
+    def identify_special_positions(cut_point, chromosome_1, chromosome_2) -> list:
+        """
+        Identify special positions in SJOX crossover according to the given parents (chromosomes) and a cutting point.
+        :param cut_point: (upto and including) the point which separates special genes from non-special ones.
+        :param chromosome_1: parent 1
+        :param chromosome_2: parent 2
+        :return: a list of special positions
+        """
+        special_positions = list()
+        for position in range(len(chromosome_1)):
+            # criteria
+            if position <= cut_point or chromosome_1[position] == chromosome_2[position]:
+                special_positions.append(position)
+        return special_positions
+
 class Crossover:
     """
     Implement well-known crossovers in flowshop problem.
@@ -542,16 +558,11 @@ class Crossover:
         Implement SJOX crossover.
         :return: (tuple) two offsprings reproduced from given parents.
         """
-        number_of_positions = np.random.randint(
-            low=1,
+        # Random position to indicate left and right sections
+        random_position = np.random.randint(
+            low=0,
             high=len(self.offspring_1)
         )
-        # Random permutation on positions
-        random_positions_permutation = list(
-            np.random.permutation(len(self.offspring_1))
-        )
-        # Selecting the first number_of_positions as special positions
-        special_positions = random_positions_permutation[:number_of_positions]
         # For parent1 selection at random
         parent_random_number = random.random()
         for i in range(2):
@@ -561,6 +572,12 @@ class Crossover:
             else:
                 parent_2, parent_1 = self.chromosome_1, self.chromosome_2
                 selected_offspring = self.offspring_2
+            # Identify special positions
+            special_positions = Crossover_helper().identify_special_positions(
+                cut_point=random_position,
+                chromosome_1=parent_1,
+                chromosome_2=parent_2
+            )
             # Two lists to store genes in special positions and genes other than those in special positions
             genes_in_special_positions = list()
             genes_in_non_special_positions = list()
@@ -585,13 +602,13 @@ class Crossover:
 
 
 chro_1 = np.array(
-    [1, 2, 3, 4, 5, 6, 7]
+    [2, 5, 1, 6, 7, 4, 3]
 )
 chro_2 = np.array(
-    [4, 3, 7, 6, 2, 5, 1]
+    [4, 7, 1, 6, 5, 2, 3]
 )
 cross = Crossover(
     chromosome_1=chro_1,
     chromosome_2=chro_2
 )
-print(cross.tpx())
+print(cross.sjox())
