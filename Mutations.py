@@ -94,8 +94,6 @@ class Mutation:
         random_positions = np.random.permutation(len(self.mutated_chromosome))[:3]
         # Obtain a new permutation between selected positions
         permuted_random_positions = np.random.permutation(random_positions)
-        print(random_positions + 1)
-        print(permuted_random_positions + 1)
         # Mutation operator logic
         for position in range(len(random_positions)):
             self.mutated_chromosome[random_positions[position]], \
