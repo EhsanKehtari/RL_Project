@@ -149,14 +149,21 @@ class Crossover_helper:
 
 class Crossover:
     """
-    Implement well-known crossovers in flowshop problem.
-    List of crossovers:
-    - NXO
-    - PMX
-    - PBX
-    - OX
-    - CX
-    - OBX
+    Implement well-known crossovers in Genetic Algorithm to be used for flowshop problem.
+    List of crossovers (total=13):
+    - nxo
+    - pmx
+    - pbx
+    - cx
+    - obx
+    - opx
+    - mopx
+    - tpx
+    - sjox
+    - ox
+    - mox
+    - nox
+    - mnox
     """
 
     def __init__(self, chromosome_1: ndarray, chromosome_2: ndarray, job_machine_matrix=None, jobs=None):
@@ -792,15 +799,3 @@ class Crossover:
             parent_random_number = 1 - parent_random_number
         return self.offspring_1, self.offspring_2
 
-
-chro_1 = np.array(
-    [1, 2, 3, 4, 5, 6, 7]
-)
-chro_2 = np.array(
-    [4, 3, 7, 6, 2, 5, 1]
-)
-cross = Crossover(
-    chromosome_1=chro_1,
-    chromosome_2=chro_2
-)
-print(cross.mopx())

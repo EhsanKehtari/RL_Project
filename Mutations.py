@@ -4,16 +4,20 @@ from numpy import ndarray
 
 class Mutation:
     """
-    Implement well-known mutation operators in flowshop problem.
-    List of mutation operators:
-    - ins_m
+    Implement well-known mutation operators in Genetic Algorithm to be used for flowshop problem.
+    List of mutation operators (total=5):
+    - insertion_m
+    - swap_m
+    - inversion_m
+    - adjacent_m
+    - three_jobs_change_m
     """
 
     def __init__(self, chromosome):
         self.chromosome = chromosome
         self.mutated_chromosome = self.chromosome
 
-    def ins_m(self) -> ndarray:
+    def insertion_m(self) -> ndarray:
         """
         Implement insM operator (Insertion Mutation).
         :return: one mutated chromosome
@@ -35,7 +39,7 @@ class Mutation:
         )
         return self.mutated_chromosome
 
-    def swp_m(self):
+    def swap_m(self):
         """
         Implement swpM operator (Swap Mutation).
         :return: one mutated chromosome
@@ -49,7 +53,7 @@ class Mutation:
             self.mutated_chromosome[position_2], self.mutated_chromosome[position_1]
         return self.mutated_chromosome
 
-    def inv_m(self):
+    def inversion_m(self):
         """
         Implement invM operator (Inversion Mutation).
         :return: one mutated chromosome
@@ -68,7 +72,7 @@ class Mutation:
                 self.mutated_chromosome[high - step], self.mutated_chromosome[low + step]
         return self.mutated_chromosome
 
-    def adj_m(self):
+    def adjacent_m(self):
         """
         Implement adjM operator (Adjacent jobs change Mutation).
         :return: one mutated chromosome
@@ -85,7 +89,7 @@ class Mutation:
             self.mutated_chromosome[high], self.mutated_chromosome[low]
         return self.mutated_chromosome
 
-    def thj_m(self):
+    def three_jobs_change_m(self):
         """
         Implement thjM operator (3-jobs change Mutation).
         :return: one mutated chromosome
@@ -102,9 +106,3 @@ class Mutation:
                     self.mutated_chromosome[random_positions[position]]
         return self.mutated_chromosome
 
-
-chro_1 = np.array(
-    [1, 2, 3, 4, 5, 6, 7]
-)
-mut = Mutation(chromosome=chro_1)
-print(mut.thj_m())
