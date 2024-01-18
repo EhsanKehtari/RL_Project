@@ -18,9 +18,3 @@ def get_non_static_methods_instances(obj):
                           not method == '__init__']
     return [getattr(obj, method) for method in non_static_methods]
 
-print(get_non_static_methods_instances(
-    Mutation(
-        chromosome=np.array([2, 4, 6, 8, 10])
-    )
-)[0]())
-

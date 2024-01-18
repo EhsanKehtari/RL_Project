@@ -206,20 +206,3 @@ class OTR_ENV2(gym.Env):
             self.problem_terminated = True
         return observation, reward, self.problem_terminated, False, None
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
