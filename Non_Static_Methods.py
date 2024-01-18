@@ -1,10 +1,5 @@
 import inspect
 
-import numpy as np
-
-from Crossovers import Crossover
-from Mutations import Mutation
-
 
 def get_non_static_methods_instances(obj):
     """
