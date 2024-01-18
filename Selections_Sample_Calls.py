@@ -12,14 +12,10 @@ population = np.array(
 obj_func_val = np.array(
     [11.5, 3, 14, 17, 1.5, 9]
 )
-rank_val = np.array(
-    [6/21, 5/21, 4/21, 3/21, 2/21, 1/21]
-)
 selection_size = 6
 selection = Selection(
     population=population,
     objective_function_values=obj_func_val,
-    rank_values=rank_val,
     selection_size=selection_size
 )
 # Random Selection

@@ -71,10 +71,10 @@ class OperatingRoomScheduling(gym.Env):
         self.info['Next Step Stage'] = 'Stage 1'
 
     def end_of_pre_operative(self, patient, resource):
-        # Modify patient's attributes
+        # Modify job's attributes
         patient.block = True
         patient.service_condition[0] = 1
-        # Move patient to next stage's waiting patients list
+        # Move job to next stage's waiting patients list
         self.take_action_info['Stage 2']['Waiting Patients'].append(patient)
         # Modify resource's attribute
         resource.working_status = False
@@ -83,10 +83,10 @@ class OperatingRoomScheduling(gym.Env):
         resource.done_jobs_sequence.append(patient)
 
     def end_of_peri_operative(self, patient, resource):
-        # Modify patient's attributes
+        # Modify job's attributes
         patient.block = True
         patient.service_condition[1] = 1
-        # Move patient to next stage's waiting patients list
+        # Move job to next stage's waiting patients list
         self.take_action_info['Stage 3']['Waiting Patients'].append(patient)
         # Modify resource's attribute
         resource.working_status = False
@@ -95,7 +95,7 @@ class OperatingRoomScheduling(gym.Env):
         resource.done_jobs_sequence.append(patient)
 
     def end_of_post_operative(self, patient, resource):
-        # Modify patient's attributes
+        # Modify job's attributes
         patient.block = False
         patient.service_condition[2] = 1
         # Modify resource's attribute
@@ -121,7 +121,7 @@ class OperatingRoomScheduling(gym.Env):
         waiting_patients_ids = list()
         for patient in waiting_patients:
             waiting_patients_ids.append(patient.id)
-        # No need to execute a heuristic if only one patient is ready to undergo a process in any given stage
+        # No need to execute a heuristic if only one job is ready to undergo a process in any given stage
         if len(waiting_patients_ids) == 1:
             patient_idx = waiting_patients_ids[0]
         else:
@@ -210,15 +210,15 @@ class OperatingRoomScheduling(gym.Env):
                 leopt_instance = Flowshop(leopt_job_machine_matrix, np.array(waiting_patients_ids))
                 leopt_result_sequence = leopt_instance.leopt()
                 patient_idx = leopt_result_sequence[0]
-        # Find chosen patient object according to patient_idx
+        # Find chosen job object according to patient_idx
         chosen_patient_location = waiting_patients_ids.index(patient_idx)
         patient = waiting_patients[chosen_patient_location]
-        # Specify an idle resource to take care of the chosen patient
+        # Specify an idle resource to take care of the chosen job
         resource = self.take_action_info[stage_under_study]['Idle Resources'][0]
         return patient, resource
 
     def schedule_patient(self, patient, resource, current_clock):
-        # Modify patient's attributes
+        # Modify job's attributes
         patient.block = False
         patient.current_stage = resource.id[0]
         if patient.current_stage == 1:
@@ -242,7 +242,7 @@ class OperatingRoomScheduling(gym.Env):
             patient.post_operating_time *= resource.rate
             # Patient's end of service changes according to clock and assigned resource's service rate
             patient.end_post_operating = patient.start_post_operating + patient.post_operating_time
-        # Remove patient from current stage's waiting patients list
+        # Remove job from current stage's waiting patients list
         self.take_action_info['Stage ' + str(patient.current_stage)]['Waiting Patients'].remove(patient)
         # Modify resource's attributes
         resource.working_status = True
@@ -253,7 +253,7 @@ class OperatingRoomScheduling(gym.Env):
             self.take_action_info['Stage ' + str(resource.id[0] - 1)]['Idle Resources'].append(patient.assigned_resource)
         # Remove current resource from current stage's idle resources list
         self.take_action_info['Stage ' + str(resource.id[0])]['Idle Resources'].remove(resource)
-        # Modify patient's current assigned resource
+        # Modify job's current assigned resource
         patient.assigned_resource = resource
         # Determine event type based on stage number
         if resource.id[0] == 1:
@@ -262,7 +262,7 @@ class OperatingRoomScheduling(gym.Env):
             event_type = 'End of Peri-Operative'
         else:
             event_type = 'End of Post-Operative'
-        # Schedule patient on resource
+        # Schedule job on resource
         self.fel_maker(
             patient,
             resource,
@@ -284,9 +284,9 @@ class OperatingRoomScheduling(gym.Env):
         })
 
     def step(self, action):
-        # Interpret action and find a patient to be scheduled on a resource
+        # Interpret action and find a job to be scheduled on a resource
         patient, resource = self.action_to_heuristics(action)
-        # Schedule patient on the specified resource
+        # Schedule job on the specified resource
         self.schedule_patient(patient, resource, self.clock)
         # Specify initial termination terms for problem and step
         problem_terminated = False

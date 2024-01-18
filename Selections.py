@@ -16,20 +16,18 @@ class Selection:
     """
 
     def __init__(
-            self, population: ndarray,
-            objective_function_values: ndarray,
-            rank_values: ndarray,
-            selection_size: int
+            self,
+            population: ndarray = None,
+            objective_function_values: ndarray = None,
+            selection_size: int = None
     ):
         """
         :param selection_size: Number of chromosomes to be selected from population.
         :param objective_function_values: Objective function values of each of the chromosomes in the population.
-        :param rank_values: Rank values of each of the chromosomes in the population.
         :param population: Initial population to be selected from.
         """
         self.population = population
         self.selection_size = selection_size
-        self.rank_values = rank_values
         self.objective_function_values = objective_function_values
 
     def random_s(self) -> ndarray:
@@ -84,6 +82,12 @@ class Selection:
         Select selection_size chromosomes from the given population based on rank-weighted roulette wheel selection.
         :return: array of selected chromosomes
         """
+        # Rank values
+        rank_values = np.zeros_like(self.objective_function_values)
+        denominator = (len(rank_values) * (len(rank_values) + 1)) / 2
+        for rank in range(len(rank_values)):
+            numerator = len(rank_values) - rank
+            rank_values[rank] = numerator / denominator
         # Creating empty subpopulation
         sub_population = np.zeros(
             shape=(self.selection_size, self.population.shape[1]),
@@ -97,10 +101,10 @@ class Selection:
             random_value = random.random()
             # Comparison
             base_idx = 0
-            base_value = self.rank_values[base_idx]
+            base_value = rank_values[base_idx]
             while base_value < random_value:
                 base_idx += 1
-                base_value += self.rank_values[base_idx]
+                base_value += rank_values[base_idx]
             # Identify selected chromosome and put it in sub_population
             sub_population[selection_num] = population_sorted[base_idx]
         return sub_population

@@ -1,3 +1,5 @@
+import inspect
+
 import numpy as np
 from numpy import ndarray
 
@@ -13,7 +15,7 @@ class Mutation:
     - three_jobs_change_m
     """
 
-    def __init__(self, chromosome):
+    def __init__(self, chromosome: ndarray = None):
         self.chromosome = chromosome
         self.mutated_chromosome = self.chromosome
 

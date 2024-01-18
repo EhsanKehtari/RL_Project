@@ -166,7 +166,13 @@ class Crossover:
     - mnox
     """
 
-    def __init__(self, chromosome_1: ndarray, chromosome_2: ndarray, job_machine_matrix=None, jobs=None):
+    def __init__(
+            self,
+            chromosome_1: ndarray = None,
+            chromosome_2: ndarray = None,
+            job_machine_matrix: ndarray = None,
+            jobs: ndarray = None
+    ):
         """
         :param chromosome_1: one parent to be considered for reproducing offsprings
         :param chromosome_2: one parent to be considered for reproducing offsprings
@@ -798,4 +804,3 @@ class Crossover:
             # To trigger the reproduction of the other offspring
             parent_random_number = 1 - parent_random_number
         return self.offspring_1, self.offspring_2
-
