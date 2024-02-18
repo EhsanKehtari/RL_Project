@@ -179,20 +179,57 @@ class Simulators:
             current_event_resource.done_jobs_sequence.append(current_event_job)
             # Move resource from last stage to last stage's idle resources list (if applicable)
             if current_event_resource.id[0] == self.number_of_stages:
-                self.info[current_event_resource]['Idle Resources'].append(current_event_resource)
+                self.info[current_event_resource.id[0]]['Idle Resources'].append(current_event_resource)
             # Update current stage's final sequence
             self.stage_final_sequence_dict[current_event_resource.id[0]].append(current_event_job)
             # Remove current event from fel
             self.future_event_list.remove(current_event)
             # Execute event (backward look);
-            for stage_num in range(1, self.number_of_stages + 1):
-                # Check if any job-resource match can occur
-                if len(self.info[stage_num]['Idle Resources']) != 0 and \
-                        len(self.info[stage_num]['Waiting Jobs']) != 0:
-                    self.schedule_job(
-                        job=self.info[stage_num]['Waiting Jobs'][0],
-                        resource=self.info[stage_num]['Idle Resources'][0],
-                        current_clock=self.clock
-                    )
+            restart_backward_look = True
+            while restart_backward_look:
+                restart_backward_look = False
+                for stage_num in range(1, self.number_of_stages + 1):
+                    # Check if any job-resource match can occur
+                    if len(self.info[stage_num]['Idle Resources']) != 0 and \
+                            len(self.info[stage_num]['Waiting Jobs']) != 0:
+                        self.schedule_job(
+                            job=self.info[stage_num]['Waiting Jobs'][0],
+                            resource=self.info[stage_num]['Idle Resources'][0],
+                            current_clock=self.clock
+                        )
+                        restart_backward_look = True
+                        break
         c_max = self.clock
         return c_max
+
+
+jmm = np.array(
+    [[10, 15, 10],
+    [20, 20, 5],
+    [10, 20, 30],
+    [5, 35, 15],
+    [15, 15, 25]]
+)
+jobs = np.array(
+    [1, 5, 11, 6, 7]
+)
+stage_num_name_dict = {
+    1: 'stage 1',
+    2: 'stage 2',
+    3: 'stage 3'
+}
+stage_machines_dict = {
+    1: 3,
+    2: 2,
+    3: 3
+}
+sequence = np.array(
+    [11, 5, 7, 1, 6]
+)
+print(Simulators(
+    job_machine_matrix=jmm,
+    jobs=jobs,
+    stage_num_name_dict=stage_num_name_dict,
+    stage_machines_dict=stage_machines_dict,
+    jobs_sequence=sequence
+).ls_simulator())

@@ -263,7 +263,7 @@ class Crossover:
             size=2
         )
         # Avoid duplicates
-        while random_positions[0] == random_positions[1]:
+        while abs(random_positions[1] - random_positions[0]) == len(self.offspring_1) - 1:
             random_positions = np.random.randint(
                 low=0,
                 high=len(self.offspring_1),
@@ -443,7 +443,7 @@ class Crossover:
         # Random position to indicate left and right sections
         random_position = np.random.randint(
             low=0,
-            high=len(self.offspring_1)
+            high=len(self.offspring_1) - 1
         )
         # Lower and upper bound for substring selection
         low = 0
@@ -482,12 +482,11 @@ class Crossover:
         # Random position to indicate left and right sections
         random_position = np.random.randint(
             low=0,
-            high=len(self.offspring_1)
+            high=len(self.offspring_1) - 1
         )
         # Lower and upper bound for substring selection
         low = 0
         high = random_position
-        high = 2
         # For parent1 selection at random
         parent_random_number = random.random()
         for i in range(2):
@@ -529,7 +528,7 @@ class Crossover:
             size=2
         )
         # Avoid duplicates
-        while random_positions[0] == random_positions[1]:
+        while abs(random_positions[0] - random_positions[1]) == len(self.offspring_1) - 1:
             random_positions = np.random.randint(
                 low=0,
                 high=len(self.offspring_1),
@@ -572,7 +571,7 @@ class Crossover:
         # Random position to indicate left and right sections
         random_position = np.random.randint(
             low=0,
-            high=len(self.offspring_1)
+            high=len(self.offspring_1) - 1
         )
         # For parent1 selection at random
         parent_random_number = random.random()
@@ -622,7 +621,7 @@ class Crossover:
             size=2
         )
         # Avoid duplicates
-        while random_positions[0] == random_positions[1]:
+        while abs(random_positions[0] - random_positions[1]) == len(self.offspring_1) - 1:
             random_positions = np.random.randint(
                 low=0,
                 high=len(self.offspring_1),
@@ -669,7 +668,7 @@ class Crossover:
             size=2
         )
         # Avoid duplicates
-        while random_positions[0] == random_positions[1]:
+        while abs(random_positions[0] - random_positions[1]) == len(self.offspring_1) - 1:
             random_positions = np.random.randint(
                 low=0,
                 high=len(self.offspring_1),
@@ -719,7 +718,7 @@ class Crossover:
             size=2
         )
         # Avoid duplicates
-        while random_positions[0] == random_positions[1]:
+        while abs(random_positions[0] - random_positions[1]) == len(self.offspring_1) - 1:
             random_positions = np.random.randint(
                 low=0,
                 high=len(self.offspring_1),
@@ -728,7 +727,6 @@ class Crossover:
         # Lower and upper bound for substring selection
         low = random_positions.min()
         high = random_positions.max()
-        low, high = 2, 4
         # For parent1 selection at random
         parent_random_number = random.random()
         for i in range(2):
@@ -769,7 +767,7 @@ class Crossover:
             size=2
         )
         # Avoid duplicates
-        while random_positions[0] == random_positions[1]:
+        while abs(random_positions[0] - random_positions[1]) == len(self.offspring_1) - 1:
             random_positions = np.random.randint(
                 low=0,
                 high=len(self.offspring_1),

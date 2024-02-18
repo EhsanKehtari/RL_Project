@@ -28,7 +28,7 @@ crossover = Crossover(
 # NXO
 print('NXO Crossover: ', '\n', crossover.nxo())
 # Partially Matched Crossover
-print('Partially Matched Crossover: ', '\n', crossover.pmx())
+print('Partially Mapped Crossover: ', '\n', crossover.pmx())
 # Position Based Crossover
 print('Position Based Crossover: ', '\n', crossover.pbx())
 # Cycle Crossover
