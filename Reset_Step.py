@@ -71,7 +71,8 @@ class OperatingRoomScheduling(gym.Env):
         self.info['Next Step Stage'] = 'Stage 1'
 
         observation = np.array([self.clock,len(self.future_event_list)])
-        return observation, None
+        info = dict()
+        return observation, info
 
     def end_of_pre_operative(self, patient, resource):
         # Modify job's attributes
