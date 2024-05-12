@@ -337,7 +337,7 @@ class OperatingRoomScheduling(gym.Env):
                 self.future_event_list.remove(current_event)
         reward = -1
         observation = np.array([self.clock, len(self.future_event_list)])
-        return observation, reward, problem_terminated, False, None
+        return observation, reward, problem_terminated, False, {}
 
 
 class Patient:
