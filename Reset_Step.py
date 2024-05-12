@@ -1,7 +1,7 @@
 from typing import Tuple
 
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
 from numpy import ndarray
 from Heuristics_OOP import Flowshop
@@ -69,6 +69,9 @@ class OperatingRoomScheduling(gym.Env):
                 )
         # Stage 1 is the next stage to be taken care of in the next step (i.e., step 1)
         self.info['Next Step Stage'] = 'Stage 1'
+
+        observation = np.array([self.clock,len(self.future_event_list)])
+        return observation, None
 
     def end_of_pre_operative(self, patient, resource):
         # Modify job's attributes
@@ -332,8 +335,8 @@ class OperatingRoomScheduling(gym.Env):
                     )
                 # Remove current event from fel
                 self.future_event_list.remove(current_event)
-        observation = None
-        reward = None
+        reward = -1
+        observation = np.array([self.clock, len(self.future_event_list)])
         return observation, reward, problem_terminated, False, None
 
 
