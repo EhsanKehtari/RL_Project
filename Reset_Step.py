@@ -70,7 +70,7 @@ class OperatingRoomScheduling(gym.Env):
         # Stage 1 is the next stage to be taken care of in the next step (i.e., step 1)
         self.info['Next Step Stage'] = 'Stage 1'
 
-        observation = np.array([self.clock,len(self.future_event_list)])
+        observation = np.array([self.clock,len(self.future_event_list)], dtype=np.float32)
         return observation, {'hi': 1}
 
     def end_of_pre_operative(self, patient, resource):
