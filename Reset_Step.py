@@ -70,8 +70,8 @@ class OperatingRoomScheduling(gym.Env):
         # Stage 1 is the next stage to be taken care of in the next step (i.e., step 1)
         self.info['Next Step Stage'] = 'Stage 1'
 
-        observation = np.array([self.clock,len(self.future_event_list)], dtype=np.float32)
-        return observation, {'hi': 1}
+        observation = np.array([self.clock, len(self.future_event_list)], dtype=np.float32)
+        return observation, {}
 
     def end_of_pre_operative(self, patient, resource):
         # Modify job's attributes
@@ -337,7 +337,7 @@ class OperatingRoomScheduling(gym.Env):
                 self.future_event_list.remove(current_event)
         reward = -1
         observation = np.array([self.clock, len(self.future_event_list)])
-        return observation, reward, problem_terminated, False, {'hi': 1}
+        return observation, reward, problem_terminated, False, {}
 
 
 class Patient:
