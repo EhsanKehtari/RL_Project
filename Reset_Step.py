@@ -9,7 +9,7 @@ from Heuristics_OOP import Flowshop
 
 class OperatingRoomScheduling(gym.Env):
     def __init__(self, job_machine_matrix: ndarray, jobs: ndarray, stages_machines: list):
-        self.observation_space = spaces.Box(low=0, high=np.infty, shape=(6,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0, high=np.infty, shape=(2,), dtype=np.float32)
         self.action_space = spaces.Discrete(11)
         self.job_machine_matrix = job_machine_matrix
         self.jobs = jobs
