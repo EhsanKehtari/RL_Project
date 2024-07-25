@@ -35,7 +35,7 @@ class OperatingRoomScheduling(gym.Env):
         self.future_event_list = list()
         self.clock = 0
 
-    def reset(self, seed= None):
+    def reset(self, seed = None, options = None):
         self.future_event_list = list()
         self.clock = 0
         # Instantiate patients
