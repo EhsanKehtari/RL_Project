@@ -41,7 +41,7 @@ class OperatingRoomScheduling(gym.Env):
         self.machines_dict.clear()
         self.take_action_info.clear()
 
-        self.future_event_list = list()
+
         self.clock = 0
         # Instantiate patients
         for patients in range(self.number_of_patients):
